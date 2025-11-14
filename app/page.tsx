@@ -1,7 +1,7 @@
+'use client';
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { GoogleGenAI, GenerateContentResponse, Type, Chat } from '@google/genai';
-import { TEACHER_PROMPT } from './prompts';
+import { TEACHER_PROMPT } from '../prompts';
 
 // --- Type Definitions ---
 type Problem = {
@@ -27,7 +27,6 @@ const extractJsonFromMarkdown = (text: string): string => {
   }
   return text;
 };
-
 
 /**
  * Converts a File object to a Base64 encoded string.
@@ -57,13 +56,13 @@ const MicIcon: React.FC = () => (
       <path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
     </svg>
 );
-  
+
 const RecordingIcon: React.FC = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-red-500 animate-pulse" viewBox="0 0 20 20" fill="currentColor">
       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 011-1h4a1 1 0 110 2H8a1 1 0 01-1-1z" clipRule="evenodd" />
     </svg>
 );
-  
+
 const CorrectionSpinner: React.FC = () => (
     <div className="w-6 h-6 border-2 border-dashed rounded-full animate-spin border-stone-600"></div>
 );
@@ -112,18 +111,10 @@ const App: React.FC = () => {
   const [highlightKeywords, setHighlightKeywords] = useState<string[]>([]);
 
   // --- Refs ---
-  const aiRef = useRef<GoogleGenAI | null>(null);
-  const chatRef = useRef<Chat | null>(null);
   const chatBottomRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null); // For SpeechRecognition instance
-  
-  // --- Effects ---
-  useEffect(() => {
-    if (process.env.API_KEY) {
-      aiRef.current = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    }
-  }, []);
 
+  // --- Effects ---
   useEffect(() => {
     // Scroll to the bottom of the chat history when new messages are added
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -136,18 +127,20 @@ const App: React.FC = () => {
     };
   }, []);
 
-
   // --- Core API Functions ---
 
   const handleImageChange = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file || !aiRef.current) return;
+    if (!file) {
+      setError('ファイルが選択されていません。');
+      return;
+    }
 
     setIsLoading(true);
     setError('');
     setSelectedProblem(null);
     setOcrResults([]);
-    
+
     let processedFile = file;
 
     const isHeic = file.type === 'image/heic' || file.name.toLowerCase().endsWith('.heic');
@@ -167,40 +160,43 @@ const App: React.FC = () => {
         }
     }
 
+    console.log('📋 Starting image processing...');
     setLoadingMessage('プリント読み込み中…');
     setImageFile(processedFile);
     setImageUrl(URL.createObjectURL(processedFile));
+    console.log('✅ Image URL created:', URL.createObjectURL(processedFile));
 
     try {
+      console.log('🔄 Converting file to generative part...');
       const imagePart = await fileToGenerativePart(processedFile);
-      const textPart = { text: `この画像から、小学生向けの算数の問題文を抽出してください。問題番号もあれば一緒に抽出してください。結果をJSON形式で返してください。各問題は 'number' (問題番号、なければnull) と 'question' (問題文) のキーを持つオブジェクトにしてください。例: { "problems": [ { "number": "1", "question": "3 + 5 =" } ] }` };
-      
-      const response = await aiRef.current.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: [{ parts: [imagePart, textPart] }],
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: Type.OBJECT, properties: {
-              problems: {
-                type: Type.ARRAY, items: {
-                  type: Type.OBJECT, properties: {
-                    number: { type: Type.STRING, description: "問題番号。なければnull" },
-                    question: { type: Type.STRING, description: "問題文" }
-                  }, required: ["question"]
-                }
-              }
-            }, required: ["problems"]
-          }
-        }
+      console.log('✅ Image part created:', {
+        hasData: !!imagePart.inlineData.data,
+        mimeType: imagePart.inlineData.mimeType,
+        dataLength: imagePart.inlineData.data?.length
       });
 
-      const result = JSON.parse(response.text);
+      const textPart = { text: `この画像から、小学生向けの算数の問題文を抽出してください。問題番号もあれば一緒に抽出してください。結果をJSON形式で返してください。各 문제는 'number' (問題番号、なければnull) と 'question' (問題文) のキーを持つオブジェクトにしてください。例: { "problems": [ { "number": "1", "question": "3 + 5 =" } ] }` };
+
+      // Call API route for OCR
+      const response = await fetch('/api/ocr', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageData: imagePart.inlineData.data, mimeType: imagePart.inlineData.mimeType }),
+      });
+
+      if (!response.ok) {
+        throw new Error('OCR API failed');
+      }
+
+      const result = await response.json();
+      console.log('✅ Parsed result:', result);
       setOcrResults(result.problems || []);
       setAppState('solving');
     } catch (err) {
-      console.error("OCR Error:", err);
-      setError('ごめんね、プリントから問題を見つけられなかったみたい。別のしゃしんで試してみてね。');
+      console.error("❌ OCR Error:", err);
+      console.error("Error details:", err);
+      setError(`ごめんね、プリントから問題を見つけられなかったみたい。別のしゃしんで試してみてね。
+      ${err}`);
       setAppState('upload');
     } finally {
       setIsLoading(false);
@@ -209,8 +205,8 @@ const App: React.FC = () => {
 
   const handleSendMessage = useCallback(async (messageOverride?: string) => {
     const message = messageOverride || userMessage;
-    if (!message.trim() || !chatRef.current) return;
-    
+    if (!message.trim()) return;
+
     setUserMessage('');
     setChatHistory(prev => [...prev, { role: 'user', text: message }]);
     setIsLoading(true);
@@ -219,22 +215,22 @@ const App: React.FC = () => {
     setHighlightKeywords([]);
 
     try {
-        const response: GenerateContentResponse = await chatRef.current.sendMessage({ message });
-        let modelResponseText = '';
-        
-        try {
-            const jsonText = extractJsonFromMarkdown(response.text);
-            const { teacher, hint, highlight } = JSON.parse(jsonText);
-            setChatHistory(prev => [...prev, { role: 'model', text: teacher, hint: hint }]);
-            setHighlightKeywords(highlight || []);
-            modelResponseText = teacher;
-        } catch (parseError) {
-            modelResponseText = response.text;
-            setChatHistory(prev => [...prev, { role: 'model', text: modelResponseText }]);
-            setHighlightKeywords([]);
+        // Call API route for chat
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message, problem: selectedProblem?.question, chatHistory }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Chat API failed');
         }
 
-        if (modelResponseText.includes('正解')) {
+        const result = await response.json();
+        setChatHistory(prev => [...prev, { role: 'model', text: result.teacher, hint: result.hint }]);
+        setHighlightKeywords(result.highlight || []);
+
+        if (result.teacher.includes('正解')) {
           setShowSimilarProblemButton(true);
         }
     } catch(err) {
@@ -245,10 +241,10 @@ const App: React.FC = () => {
         setIsLoading(false);
     }
 
-  }, [userMessage]);
+  }, [userMessage, selectedProblem, chatHistory]);
 
   const generateSimilarProblem = useCallback(async () => {
-    if (!selectedProblem || !aiRef.current) return;
+    if (!selectedProblem) return;
 
     setIsLoading(true);
     setLoadingMessage('類題を作成中…');
@@ -256,25 +252,21 @@ const App: React.FC = () => {
     setChatHistory([]);
     setHighlightKeywords([]);
 
-
     try {
-        const textPrompt = `「${selectedProblem.question}」という日本の小学生向けの算数の問題に似た問題を1つだけ作成してください。数字や内容は変えてください。結果はJSON形式で、'question'というキーに問題文のみを入れてください。`;
-        
-        const textResponse = await aiRef.current.models.generateContent({
-            model: 'gemini-2.5-flash', contents: [{ parts: [{ text: textPrompt }] }],
-            config: {
-                responseMimeType: "application/json",
-                responseSchema: {
-                    type: Type.OBJECT, properties: {
-                        question: { type: Type.STRING, description: "生成された類似問題文" }
-                    }, required: ["question"]
-                }
-            }
+        // Call API route for similar problem
+        const response = await fetch('/api/similar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question: selectedProblem.question }),
         });
 
-        const textResult = JSON.parse(textResponse.text);
-        const newProblem: Problem = { number: '類題', question: textResult.question };
-        
+        if (!response.ok) {
+          throw new Error('Similar problem API failed');
+        }
+
+        const result = await response.json();
+        const newProblem: Problem = { number: '類題', question: result.question };
+
         await startChat(newProblem);
 
     } catch (err) {
@@ -284,7 +276,6 @@ const App: React.FC = () => {
         setIsLoading(false);
     }
 }, [selectedProblem]);
-
 
   const handleToggleListening = useCallback(async () => {
     if (isListening) {
@@ -312,15 +303,22 @@ const App: React.FC = () => {
 
     recognition.onresult = async (event: any) => {
         const rawText = event.results[0][0].transcript;
-        if (!rawText || !aiRef.current) return;
+        if (!rawText) return;
         setIsCorrecting(true);
         try {
-            const correctorChat = aiRef.current.chats.create({
-                model: 'gemini-2.5-flash',
-                config: { systemInstruction: `あなたは、日本の小学生が話した言葉を、算数の文脈で正しく書き起こす専門家です。数字は半角に、単位は小学生に最も分かりやすい形に直してください。余計な言葉はつけず、整形したテキストだけを返してください。` },
+            // Call API route for speech correction
+            const response = await fetch('/api/correct', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ text: rawText }),
             });
-            const response = await correctorChat.sendMessage({ message: rawText });
-            setUserMessage(response.text.trim());
+
+            if (!response.ok) {
+              throw new Error('Correction API failed');
+            }
+
+            const result = await response.json();
+            setUserMessage(result.correctedText);
         } catch(err) {
             console.error("Speech correction error:", err);
             setUserMessage(rawText);
@@ -330,14 +328,8 @@ const App: React.FC = () => {
     };
     recognition.start();
   }, [isListening]);
-  
-  const startChat = useCallback(async (problem: Problem) => {
-    if (!aiRef.current) return;
 
-    chatRef.current = aiRef.current.chats.create({
-        model: 'gemini-2.5-flash',
-        config: { systemInstruction: `${TEACHER_PROMPT}\n\n# Problem Text:\n${problem.question}` },
-    });
+  const startChat = useCallback(async (problem: Problem) => {
     setSelectedProblem(problem);
     setChatHistory([]);
     setHighlightKeywords([]);
@@ -347,17 +339,20 @@ const App: React.FC = () => {
     setLoadingMessage('先生が考え中…');
 
     try {
-        const response: GenerateContentResponse = await chatRef.current.sendMessage({ message: 'この問題について教えてください。' });
-        
-        try {
-            const jsonText = extractJsonFromMarkdown(response.text);
-            const { teacher, hint, highlight } = JSON.parse(jsonText);
-            setChatHistory([{ role: 'model', text: teacher, hint: hint }]);
-            setHighlightKeywords(highlight || []);
-        } catch (parseError) {
-            setChatHistory([{ role: 'model', text: response.text }]);
-            setHighlightKeywords([]);
+        // Call API route for initial chat
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: 'この問題について教えてください。', problem: problem.question, chatHistory: [] }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Initial chat API failed');
         }
+
+        const result = await response.json();
+        setChatHistory([{ role: 'model', text: result.teacher, hint: result.hint }]);
+        setHighlightKeywords(result.highlight || []);
     } catch(err) {
         console.error("Chat Start Error:", err);
         setChatHistory([{ role: 'model', text: 'ごめんなさい、通信がうまくいかなかったようです。' }]);
@@ -379,7 +374,7 @@ const App: React.FC = () => {
     setError('');
     setShowSimilarProblemButton(false);
   };
-  
+
   return (
     <div className="min-h-screen bg-[#fffefc] text-stone-800 flex flex-col items-center p-4 sm:p-6">
       {appState === 'upload' && (

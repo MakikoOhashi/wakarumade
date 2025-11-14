@@ -1,8 +1,0 @@
-{
-  "name": "わかるまで",
-  "description": "学校のプリントを写真で撮って、わからない問題をAIの先生に質問できる学習アプリです。",
-  "requestFramePermissions": [
-    "camera",
-    "microphone"
-  ]
-}
