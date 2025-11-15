@@ -376,14 +376,14 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#fffefc] text-stone-800 flex flex-col items-center p-4 sm:p-6">
+    <div className="h-screen bg-[#fffefc] text-stone-800 flex flex-col items-center p-4 sm:p-6 overflow-hidden">
       {appState === 'upload' && (
         <header className="w-full max-w-6xl mb-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-500">わかるまで</h1>
         </header>
       )}
 
-      <main className={`w-full max-w-6xl flex-grow flex flex-col items-center ${appState === 'solving' ? '' : 'justify-center'}`}>
+      <main className={`w-full max-w-6xl h-full flex flex-col items-center ${appState === 'solving' ? '' : 'justify-center'}`}>
         {error && (
             <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 w-full" role="alert">
                 <p>{error}</p>
@@ -402,13 +402,13 @@ const App: React.FC = () => {
         {isLoading && <LoadingSpinner message={loadingMessage} />}
 
         {appState === 'solving' && !isLoading && (
-            <div className="w-full min-h-screen flex flex-col md:flex-row gap-6">
+            <div className="w-full h-full flex flex-col md:flex-row gap-6">
 
               <div className="md:w-3/5 flex items-center justify-center">
                   {imageUrl && <img src={imageUrl} alt="Uploaded worksheet" className="w-full h-auto object-contain rounded-lg max-h-[80vh]" />}
               </div>
 
-              <div className="md:w-2/5 flex flex-col min-h-screen pb-8">
+              <div className="md:w-2/5 flex flex-col h-full pb-8">
                   {!selectedProblem && ocrResults.length > 0 && (
                       <div className="flex flex-col h-full">
                           <div className="overflow-y-auto flex-grow">
