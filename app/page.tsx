@@ -402,13 +402,13 @@ const App: React.FC = () => {
         {isLoading && <LoadingSpinner message={loadingMessage} />}
 
         {appState === 'solving' && !isLoading && (
-            <div className="w-full h-full flex flex-col md:flex-row gap-6">
+            <div className="w-full min-h-screen flex flex-col md:flex-row gap-6">
 
-              <div className="md:w-3/5">
-                  {imageUrl && <img src={imageUrl} alt="Uploaded worksheet" className="w-full h-auto object-contain rounded-lg mb-4 max-h-[40vh] md:max-h-[85vh]" />}
+              <div className="md:w-3/5 flex items-center justify-center">
+                  {imageUrl && <img src={imageUrl} alt="Uploaded worksheet" className="w-full h-auto object-contain rounded-lg max-h-[80vh]" />}
               </div>
 
-              <div className="md:w-2/5 flex flex-col">
+              <div className="md:w-2/5 flex flex-col min-h-screen">
                   {!selectedProblem && ocrResults.length > 0 && (
                       <div className="flex flex-col h-full">
                           <div className="overflow-y-auto flex-grow">
