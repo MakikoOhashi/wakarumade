@@ -383,7 +383,7 @@ const App: React.FC = () => {
         </header>
       )}
 
-      <main className={`w-full max-w-6xl h-full flex flex-col items-center ${appState === 'solving' ? '' : 'justify-center'}`}>
+      <main className={`w-full max-w-6xl h-full flex flex-col items-center ${isLoading ? 'justify-center' : ''}`}>
         {error && (
             <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 w-full" role="alert">
                 <p>{error}</p>
