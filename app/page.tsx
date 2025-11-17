@@ -234,7 +234,7 @@ const App: React.FC = () => {
         });
         setHighlightKeywords(result.highlight || []);
 
-        if (result.teacher.includes('正解')) {
+        if (result.teacher.includes('正解') || result.teacher.includes('せいかい')) {
           setShowSimilarProblemButton(true);
         }
     } catch(err) {
