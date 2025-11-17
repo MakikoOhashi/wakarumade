@@ -1,0 +1,21 @@
+{
+  "name": "WAKARUMADE",
+  "short_name": "WAKARUMADE",
+  "description": "わかるまで - 小学生向け算数学習アプリ",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fffefc",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "16x16 32x32 48x48",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png"
+    }
+  ]
+}
