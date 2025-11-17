@@ -389,7 +389,7 @@ const App: React.FC = () => {
 
         {appState === 'upload' && !isLoading && (
             <div className="text-center">
-                <h1 className="text-4xl md:text-5xl font-bold text-500 mb-8">わかるまで</h1>
+                <h1 className="text-4xl md:text-5xl font-bold text-500 mb-10">わかるまで</h1>
                 <input type="file" id="file-upload" accept="image/*,.heic" capture="environment" onChange={handleImageChange} className="hidden" />
                 <label htmlFor="file-upload" className="cursor-pointer inline-block bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-8 rounded-full text-xl shadow-md transition-transform transform hover:scale-105">
                     写真をとる
