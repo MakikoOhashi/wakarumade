@@ -433,7 +433,7 @@ const App: React.FC = () => {
                         <div className="flex-grow overflow-y-auto mb-4 pr-2 space-y-4">
                             {chatHistory.map((msg, index) => (
                                 <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                    <div className={`max-w-md lg:max-w-xl p-3 rounded-2xl ${msg.role === 'user' ? 'bg-blue-100 rounded-br-none text-right' : 'bg-stone-200 rounded-bl-none'}`}>
+                                    <div className={`max-w-md lg:max-w-xl ${msg.role === 'user' ? 'text-right' : ''}`}>
                                         {msg.isLoading ? (
                                             <LoadingSpinner message="" />
                                         ) : (
