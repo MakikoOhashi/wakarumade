@@ -420,6 +420,7 @@ const App: React.FC = () => {
               <div className="md:w-2/5 flex flex-col h-full pb-8">
                   {!selectedProblem && ocrResults.length > 0 && (
                       <div className="flex flex-col h-full">
+                          <h2 className="text-2xl font-bold mb-4 text-stone-800">もんだいを選びましょう</h2>
                           <div className="overflow-y-auto flex-grow">
                               <ul className="space-y-3">
                                   {ocrResults.map((problem, index) => (
