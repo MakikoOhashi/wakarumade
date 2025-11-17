@@ -408,7 +408,13 @@ const App: React.FC = () => {
             <div className="w-full h-full flex flex-col md:flex-row gap-6">
 
               <div className="md:w-3/5 flex items-center justify-center">
-                  {imageUrl && <img src={imageUrl} alt="Uploaded worksheet" className="w-full h-auto object-contain rounded-lg max-h-[80vh]" />}
+                  {selectedProblem?.number === '類題' ? (
+                      <div className="text-4xl font-bold text-center text-stone-800 p-4">
+                          {selectedProblem.question}
+                      </div>
+                  ) : (
+                      imageUrl && <img src={imageUrl} alt="Uploaded worksheet" className="w-full h-auto object-contain rounded-lg max-h-[80vh]" />
+                  )}
               </div>
 
               <div className="md:w-2/5 flex flex-col h-full pb-8">
