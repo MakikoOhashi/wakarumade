@@ -380,12 +380,6 @@ const App: React.FC = () => {
 
   return (
     <div className="h-screen bg-[#fffefc] text-stone-800 flex flex-col items-center p-4 sm:p-6 overflow-hidden">
-      {appState === 'upload' && (
-        <header className="w-full max-w-6xl mb-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-500">わかるまで</h1>
-        </header>
-      )}
-
       <main className={`w-full max-w-6xl h-full flex flex-col items-center ${(isLoading || appState === 'upload') ? 'justify-center' : ''}`}>
         {error && (
             <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 w-full" role="alert">
@@ -394,7 +388,8 @@ const App: React.FC = () => {
         )}
 
         {appState === 'upload' && !isLoading && (
-            <div>
+            <div className="text-center">
+                <h1 className="text-4xl md:text-5xl font-bold text-500 mb-8">わかるまで</h1>
                 <input type="file" id="file-upload" accept="image/*,.heic" capture="environment" onChange={handleImageChange} className="hidden" />
                 <label htmlFor="file-upload" className="cursor-pointer inline-block bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-8 rounded-full text-xl shadow-md transition-transform transform hover:scale-105">
                     写真をとる
