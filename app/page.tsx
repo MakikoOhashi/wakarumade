@@ -13,6 +13,7 @@ type ChatMessage = {
     role: 'user' | 'model';
     text: string;
     hint?: string;
+    isLoading?: boolean;
 };
 
 // --- Helper Functions ---
@@ -209,8 +210,7 @@ const App: React.FC = () => {
 
     setUserMessage('');
     setChatHistory(prev => [...prev, { role: 'user', text: message }]);
-    setIsLoading(true);
-    setLoadingMessage('先生が考え中…');
+    setChatHistory(prev => [...prev, { role: 'model', text: '先生が考え中…', isLoading: true }]);
     setShowSimilarProblemButton(false);
     setHighlightKeywords([]);
 
@@ -227,7 +227,11 @@ const App: React.FC = () => {
         }
 
         const result = await response.json();
-        setChatHistory(prev => [...prev, { role: 'model', text: result.teacher, hint: result.hint }]);
+        setChatHistory(prev => {
+          const newHistory = [...prev];
+          newHistory[newHistory.length - 1] = { role: 'model', text: result.teacher, hint: result.hint };
+          return newHistory;
+        });
         setHighlightKeywords(result.highlight || []);
 
         if (result.teacher.includes('正解')) {
@@ -235,10 +239,12 @@ const App: React.FC = () => {
         }
     } catch(err) {
         console.error("Chat Error:", err);
-        setChatHistory(prev => [...prev, { role: 'model', text: 'ごめんなさい、通信がうまくいかなかったようです。' }]);
+        setChatHistory(prev => {
+          const newHistory = [...prev];
+          newHistory[newHistory.length - 1] = { role: 'model', text: 'ごめんなさい、通信がうまくいかなかったようです。' };
+          return newHistory;
+        });
         setHighlightKeywords([]);
-    } finally {
-        setIsLoading(false);
     }
 
   }, [userMessage, selectedProblem, chatHistory]);
@@ -335,8 +341,7 @@ const App: React.FC = () => {
     setHighlightKeywords([]);
     setShowSimilarProblemButton(false);
 
-    setIsLoading(true);
-    setLoadingMessage('先生が考え中…');
+    setChatHistory([{ role: 'model', text: '先生が考え中…', isLoading: true }]);
 
     try {
         // Call API route for initial chat
@@ -357,8 +362,6 @@ const App: React.FC = () => {
         console.error("Chat Start Error:", err);
         setChatHistory([{ role: 'model', text: 'ごめんなさい、通信がうまくいかなかったようです。' }]);
         setHighlightKeywords([]);
-    } finally {
-        setIsLoading(false);
     }
   }, []);
 
@@ -430,12 +433,15 @@ const App: React.FC = () => {
                         <div className="flex-grow overflow-y-auto mb-4 pr-2 space-y-4">
                             {chatHistory.map((msg, index) => (
                                 <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                    <div className={`max-w-md lg:max-w-xl ${msg.role === 'user' ? 'text-right' : ''}`}>
-                                        <p className={`whitespace-pre-wrap text-lg font-semibold ${msg.role === 'user' ? 'text-blue-900' : 'text-red-900'}`}>{msg.text}</p>
+                                    <div className={`max-w-md lg:max-w-xl p-3 rounded-2xl ${msg.role === 'user' ? 'bg-blue-100 rounded-br-none text-right' : 'bg-stone-200 rounded-bl-none'}`}>
+                                        {msg.isLoading ? (
+                                            <LoadingSpinner message="" />
+                                        ) : (
+                                            <p className={`whitespace-pre-wrap text-lg font-semibold ${msg.role === 'user' ? 'text-blue-900' : 'text-red-900'}`}>{msg.text}</p>
+                                        )}
                                     </div>
                                 </div>
                             ))}
-                            {isLoading && chatHistory.length > 0 && ( <div className="flex justify-start"><div className="p-3 rounded-2xl bg-stone-200 rounded-bl-none"><LoadingSpinner message="" /></div></div> )}
                             <div ref={chatBottomRef} />
                         </div>
                         <div className="mt-auto pt-4 border-t">
