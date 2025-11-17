@@ -465,8 +465,8 @@ const App: React.FC = () => {
                                 </button>
                             </div>
                              <div className="flex justify-between mt-3">
-                                 <button onClick={() => setSelectedProblem(null)} className="bg-stone-500 hover:bg-stone-600 text-white font-bold py-2 px-4 rounded-full transition-colors">← 別の問題を選ぶ</button>
-                                 <button onClick={resetState} className="bg-stone-500 hover:bg-stone-600 text-white font-bold py-2 px-4 rounded-full transition-colors">はじめからやり直す →</button>
+                                 <button onClick={() => setSelectedProblem(null)} className="bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold py-2 px-4 rounded-full transition-colors">← 別の問題を選ぶ</button>
+                                 <button onClick={resetState} className="bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold py-2 px-4 rounded-full transition-colors">はじめからやり直す →</button>
                              </div>
                         </div>
                     </div>
