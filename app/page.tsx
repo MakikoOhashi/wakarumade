@@ -95,6 +95,28 @@ const HighlightedText: React.FC<{ text: string; keywords: string[] }> = ({ text,
 // --- Main Application Component ---
 
 const App: React.FC = () => {
+  // --- Text Resources ---
+  const texts = {
+    ja: {
+      title: 'わかるまで',
+      takePhoto: '写真をとる',
+      loadingConverting: 'HEIC画像を変換中…',
+      loadingProcessing: 'プリント読み込み中…',
+      errorNoFile: 'ファイルが選択されていません。',
+      errorConversion: 'ごめんね、しゃしんの変換に失敗しました。別の形式で試してみてね。',
+      errorOcr: 'ごめんね、プリントから問題を見つけられなかったみたい。別のしゃしんで試してみてね。',
+    },
+    en: {
+      title: 'Until You Understand',
+      takePhoto: 'Take a Photo',
+      loadingConverting: 'Converting HEIC image...',
+      loadingProcessing: 'Reading worksheet...',
+      errorNoFile: 'No file selected.',
+      errorConversion: 'Sorry, image conversion failed. Please try another format.',
+      errorOcr: 'Sorry, couldn\'t find problems in the worksheet. Please try another image.',
+    }
+  };
+
   // --- State Management ---
   const [appState, setAppState] = useState<AppState>('upload');
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -110,6 +132,7 @@ const App: React.FC = () => {
   const [isListening, setIsListening] = useState<boolean>(false);
   const [isCorrecting, setIsCorrecting] = useState<boolean>(false);
   const [highlightKeywords, setHighlightKeywords] = useState<string[]>([]);
+  const [language, setLanguage] = useState<'ja' | 'en'>('ja');
 
   // --- Refs ---
   const chatBottomRef = useRef<HTMLDivElement>(null);
@@ -130,10 +153,15 @@ const App: React.FC = () => {
 
   // --- Core API Functions ---
 
+  const setLanguageAndClearError = (lang: 'ja' | 'en') => {
+    setLanguage(lang);
+    setError('');
+  };
+
   const handleImageChange = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) {
-      setError('ファイルが選択されていません。');
+      setError(texts[language].errorNoFile);
       return;
     }
 
@@ -146,7 +174,7 @@ const App: React.FC = () => {
 
     const isHeic = file.type === 'image/heic' || file.name.toLowerCase().endsWith('.heic');
     if (isHeic && (window as any).heic2any) {
-        setLoadingMessage('HEIC画像を変換中…');
+        setLoadingMessage(texts[language].loadingConverting);
         try {
             const conversionResult = await (window as any).heic2any({
                 blob: file, toType: "image/jpeg", quality: 0.8,
@@ -155,14 +183,14 @@ const App: React.FC = () => {
             processedFile = new File([convertedBlob], file.name.replace(/\.[^/.]+$/, ".jpeg"), { type: convertedBlob.type });
         } catch (conversionError) {
             console.error("HEIC Conversion Error:", conversionError);
-            setError('ごめんね、しゃしんの変換に失敗しました。別の形式で試してみてね。');
+            setError(texts[language].errorConversion);
             setIsLoading(false);
             return;
         }
     }
 
     console.log('📋 Starting image processing...');
-    setLoadingMessage('プリント読み込み中…');
+    setLoadingMessage(texts[language].loadingProcessing);
     setImageFile(processedFile);
     setImageUrl(URL.createObjectURL(processedFile));
     console.log('✅ Image URL created:', URL.createObjectURL(processedFile));
@@ -196,13 +224,12 @@ const App: React.FC = () => {
     } catch (err) {
       console.error("❌ OCR Error:", err);
       console.error("Error details:", err);
-      setError(`ごめんね、プリントから問題を見つけられなかったみたい。別のしゃしんで試してみてね。
-      ${err}`);
+      setError(`${texts[language].errorOcr}${err}`);
       setAppState('upload');
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [language]);
 
   const handleSendMessage = useCallback(async (messageOverride?: string) => {
     const message = messageOverride || userMessage;
@@ -389,10 +416,14 @@ const App: React.FC = () => {
 
         {appState === 'upload' && !isLoading && (
             <div className="text-center">
-                <h1 className="text-4xl md:text-5xl font-bold text-500 mb-20">わかるまで</h1>
+                <div className="flex justify-center mb-4">
+                    <button onClick={() => setLanguageAndClearError('ja')} className={`px-4 py-2 rounded ${language === 'ja' ? 'bg-orange-500 text-white' : 'bg-stone-200'}`}>日本語</button>
+                    <button onClick={() => setLanguageAndClearError('en')} className={`px-4 py-2 rounded ml-2 ${language === 'en' ? 'bg-orange-500 text-white' : 'bg-stone-200'}`}>English</button>
+                </div>
+                <h1 className="text-4xl md:text-5xl font-bold text-500 mb-20">{texts[language].title}</h1>
                 <input type="file" id="file-upload" accept="image/*,.heic" capture="environment" onChange={handleImageChange} className="hidden" />
                 <label htmlFor="file-upload" className="cursor-pointer inline-block bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-8 rounded-full text-xl shadow-md transition-transform transform hover:scale-105">
-                    写真をとる
+                    {texts[language].takePhoto}
                 </label>
             </div>
         )}
