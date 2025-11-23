@@ -10,7 +10,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-14.0.0-black)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-18.0.0-blue)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8.2-blue)](https://www.typescriptlang.org/)
-[![Prisma](https://img.shields.io/badge/Prisma-5.22.0-green)](https://www.prisma.io/)
+[![Supabase](https://img.shields.io/badge/Supabase-2.39.3-green)](https://supabase.com/)
 
 ## 🎯 Features
 
@@ -39,10 +39,11 @@
 - Progress tracking through conversation history
 - Smart hint system that responds to student needs
 
-### 💾 **Local Data Persistence**
-- SQLite database for storing chat sessions and user data
-- Persistent conversation history across sessions
-- Local data storage for offline learning capabilities
+### 💾 **Cloud Data Persistence**
+- Supabase PostgreSQL database for storing chat sessions
+- Guest user support with UUID-based identification
+- Persistent conversation history across browser sessions
+- Real-time data synchronization
 
 ### 🎨 **Modern UI/UX**
 - Clean, child-friendly interface design
@@ -69,24 +70,20 @@
     npm install
     ```
 
-3. **Configure API Key**
+3. **Configure environment variables**
     Create a `.env.local` file in the root directory:
     ```env
     GEMINI_API_KEY=your_gemini_api_key_here
+    NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
     ```
 
-4. **Set up database**
-    ```bash
-    npx prisma generate
-    npx prisma migrate dev --name init
-    ```
-
-5. **Start development server**
+4. **Start development server**
     ```bash
     npm run dev
     ```
 
-6. **Open your browser**
+5. **Open your browser**
     Navigate to `http://localhost:3000`
 
 ## 🏗️ Project Structure
@@ -94,7 +91,7 @@
 ```
 ├── app/
 │   ├── api/                # Next.js API routes
-│   │   ├── chat/           # Chat API with data persistence
+│   │   ├── chat/           # Chat API with Supabase data persistence
 │   │   ├── correct/        # Answer correction API
 │   │   ├── hint/           # Hint generation API
 │   │   ├── ocr/            # OCR processing API
@@ -102,21 +99,19 @@
 │   ├── globals.css         # Global styles
 │   ├── layout.tsx          # Root layout component
 │   └── page.tsx            # Main page component
-├── prisma/
-│   ├── schema.prisma       # Database schema
-│   └── migrations/         # Database migrations
 ├── public/                 # Static assets
 ├── prompts.ts              # AI teacher prompts and configurations
 ├── package.json            # Dependencies and scripts
 ├── tsconfig.json           # TypeScript configuration
 ├── next.config.js          # Next.js configuration
+├── .env.local              # Environment variables (Supabase, Gemini API)
 └── README.md               # Project documentation
 ```
 
 ## 🔧 Technologies Used
 
 - **Framework**: Next.js 14.0.0 + React 18.0.0 + TypeScript
-- **Database**: Prisma ORM with SQLite
+- **Database**: Supabase (PostgreSQL)
 - **AI Integration**: Google Gemini 2.5 Flash
 - **Styling**: TailwindCSS
 - **Voice Recognition**: Web Speech API

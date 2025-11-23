@@ -1,27 +1,38 @@
 import { GoogleGenAI } from '@google/genai';
 import { NextRequest, NextResponse } from 'next/server';
 import { TEACHER_PROMPT } from '../../../prompts';
-import { PrismaClient } from '@prisma/client';
+import { createClient } from '@supabase/supabase-js';
 
-const prisma = new PrismaClient();
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, problem, chatHistory, sessionId } = await request.json();
+    const { message, problem, chatHistory, guestId } = await request.json();
+
+    // Generate guestId if not provided
+    const currentGuestId = guestId || crypto.randomUUID();
 
     // Load existing chat history from database
     let existingHistory = [];
-    if (sessionId) {
-      const session = await prisma.session.findUnique({
-        where: { id: parseInt(sessionId) },
-      });
-      if (session) {
-        existingHistory = JSON.parse(session.data);
+    if (currentGuestId) {
+      const { data: existingLog } = await supabase
+        .from('guest_chat_logs')
+        .select('log')
+        .eq('guest_id', currentGuestId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (existingLog) {
+        existingHistory = existingLog.log;
       }
     }
 
     // Combine existing history with new message
-    const fullHistory = [...existingHistory, { role: 'user', content: message }];
+    const fullHistory = [...existingHistory, { role: 'user', content: message, timestamp: new Date().toISOString() }];
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
@@ -52,18 +63,26 @@ export async function POST(request: NextRequest) {
     }
 
     // Update chat history
-    const updatedHistory = [...fullHistory, { role: 'assistant', content: result.teacher }];
+    const updatedHistory = [...fullHistory, { role: 'assistant', content: result.teacher, timestamp: new Date().toISOString() }];
 
     // Save to database
-    if (sessionId) {
-      await prisma.session.upsert({
-        where: { id: parseInt(sessionId) },
-        update: { data: JSON.stringify(updatedHistory), updatedAt: new Date() },
-        create: { id: parseInt(sessionId), userId: 1, data: JSON.stringify(updatedHistory) }, // Assuming userId 1 for now
-      });
+    if (currentGuestId) {
+      const { error } = await supabase
+        .from('guest_chat_logs')
+        .upsert({
+          guest_id: currentGuestId,
+          log: updatedHistory,
+          summary: `Chat session for problem: ${problem.substring(0, 100)}...`
+        }, {
+          onConflict: 'guest_id'
+        });
+
+      if (error) {
+        console.error('Supabase error:', error);
+      }
     }
 
-    return NextResponse.json({ ...result, chatHistory: updatedHistory });
+    return NextResponse.json({ ...result, chatHistory: updatedHistory, guestId: currentGuestId });
   } catch (error) {
     console.error('Chat API error:', error);
     return NextResponse.json({ error: 'Failed to process chat' }, { status: 500 });
