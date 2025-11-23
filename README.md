@@ -4,12 +4,13 @@
 
 # WAKARUMADE (わかるまで) - AI-Powered Math Learning Assistant
 
-**WAKARUMADE** is an intelligent math learning application designed to help elementary school students understand math problems through AI-powered guidance. The app combines OCR technology, conversational AI, and voice input to create an engaging learning experience.
+**WAKARUMADE** is an intelligent math learning application designed to help elementary school students understand math problems through AI-powered guidance. The app combines OCR technology, conversational AI, voice input, and local data persistence to create an engaging learning experience.
 
 [![Demo](https://img.shields.io/badge/Demo-View_in_AI_Studio-blue)](https://ai.studio/apps/drive/1sQ1giErLE85ZK0dJuV59MDy2pFeVNS8j)
-[![React](https://img.shields.io/badge/React-19.2.0-blue)](https://reactjs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-14.0.0-black)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-18.0.0-blue)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8.2-blue)](https://www.typescriptlang.org/)
-[![Vite](https://img.shields.io/badge/Vite-6.2.0-purple)](https://vitejs.dev/)
+[![Prisma](https://img.shields.io/badge/Prisma-5.22.0-green)](https://www.prisma.io/)
 
 ## 🎯 Features
 
@@ -38,6 +39,11 @@
 - Progress tracking through conversation history
 - Smart hint system that responds to student needs
 
+### 💾 **Local Data Persistence**
+- SQLite database for storing chat sessions and user data
+- Persistent conversation history across sessions
+- Local data storage for offline learning capabilities
+
 ### 🎨 **Modern UI/UX**
 - Clean, child-friendly interface design
 - Mobile-responsive layout
@@ -47,56 +53,70 @@
 ## 🚀 Quick Start
 
 ### Prerequisites
-- **Node.js** (Latest LTS version recommended)
+- **Node.js** (v20.11.0 or later recommended)
 - **Gemini API Key** (From [Google AI Studio](https://aistudio.google.com/app/apikey))
 
 ### Installation
 
 1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd wakarumade
-   ```
+    ```bash
+    git clone <repository-url>
+    cd wakarumade
+    ```
 
 2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+    ```bash
+    npm install
+    ```
 
 3. **Configure API Key**
-   Create a `.env.local` file in the root directory:
-   ```env
-   GEMINI_API_KEY=your_gemini_api_key_here
-   ```
+    Create a `.env.local` file in the root directory:
+    ```env
+    GEMINI_API_KEY=your_gemini_api_key_here
+    ```
 
-4. **Start development server**
-   ```bash
-   npm run dev
-   ```
+4. **Set up database**
+    ```bash
+    npx prisma generate
+    npx prisma migrate dev --name init
+    ```
 
-5. **Open your browser**
-   Navigate to `http://localhost:5173`
+5. **Start development server**
+    ```bash
+    npm run dev
+    ```
+
+6. **Open your browser**
+    Navigate to `http://localhost:3000`
 
 ## 🏗️ Project Structure
 
 ```
-├── public/
-│   └── index.html          # Main HTML template
-├── src/
-│   ├── App.tsx             # Main application component
-│   ├── index.tsx           # React entry point
-│   ├── prompts.ts          # AI teacher prompts and configurations
-│   └── main.tsx            # Application bootstrap
+├── app/
+│   ├── api/                # Next.js API routes
+│   │   ├── chat/           # Chat API with data persistence
+│   │   ├── correct/        # Answer correction API
+│   │   ├── hint/           # Hint generation API
+│   │   ├── ocr/            # OCR processing API
+│   │   └── similar/        # Similar problem generation API
+│   ├── globals.css         # Global styles
+│   ├── layout.tsx          # Root layout component
+│   └── page.tsx            # Main page component
+├── prisma/
+│   ├── schema.prisma       # Database schema
+│   └── migrations/         # Database migrations
+├── public/                 # Static assets
+├── prompts.ts              # AI teacher prompts and configurations
 ├── package.json            # Dependencies and scripts
 ├── tsconfig.json           # TypeScript configuration
-├── vite.config.ts          # Vite build configuration
+├── next.config.js          # Next.js configuration
 └── README.md               # Project documentation
 ```
 
 ## 🔧 Technologies Used
 
-- **Frontend**: React 19.2.0 + TypeScript
-- **Build Tool**: Vite 6.2.0
+- **Framework**: Next.js 14.0.0 + React 18.0.0 + TypeScript
+- **Database**: Prisma ORM with SQLite
 - **AI Integration**: Google Gemini 2.5 Flash
 - **Styling**: TailwindCSS
 - **Voice Recognition**: Web Speech API
