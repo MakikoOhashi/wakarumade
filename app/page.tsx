@@ -133,6 +133,7 @@ const App: React.FC = () => {
   const [isCorrecting, setIsCorrecting] = useState<boolean>(false);
   const [highlightKeywords, setHighlightKeywords] = useState<string[]>([]);
   const [language, setLanguage] = useState<'ja' | 'en'>('ja');
+  const [guestId, setGuestId] = useState<string>('');
 
   // --- Refs ---
   const chatBottomRef = useRef<HTMLDivElement>(null);
@@ -150,6 +151,25 @@ const App: React.FC = () => {
       recognitionRef.current?.stop();
     };
   }, []);
+
+  useEffect(() => {
+    // Load or generate guestId
+    const storedGuestId = localStorage.getItem('wakarumade_guest_id');
+    if (storedGuestId) {
+      setGuestId(storedGuestId);
+    } else {
+      const newGuestId = crypto.randomUUID();
+      setGuestId(newGuestId);
+      localStorage.setItem('wakarumade_guest_id', newGuestId);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Save guestId to localStorage when it changes
+    if (guestId) {
+      localStorage.setItem('wakarumade_guest_id', guestId);
+    }
+  }, [guestId]);
 
   // --- Core API Functions ---
 
@@ -246,7 +266,7 @@ const App: React.FC = () => {
         const response = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message, problem: selectedProblem?.question, chatHistory }),
+          body: JSON.stringify({ message, problem: selectedProblem?.question, chatHistory, guestId }),
         });
 
         if (!response.ok) {
@@ -254,12 +274,15 @@ const App: React.FC = () => {
         }
 
         const result = await response.json();
-        setChatHistory(prev => {
-          const newHistory = [...prev];
-          newHistory[newHistory.length - 1] = { role: 'model', text: result.teacher, hint: result.hint };
-          return newHistory;
-        });
+        setChatHistory(result.chatHistory.map((msg: any) => ({
+          role: msg.role === 'user' ? 'user' : 'model',
+          text: msg.content,
+          hint: msg.role === 'assistant' ? result.hint : undefined
+        })));
         setHighlightKeywords(result.highlight || []);
+        if (result.guestId && result.guestId !== guestId) {
+          setGuestId(result.guestId);
+        }
 
         if (result.teacher.includes('正解') || result.teacher.includes('せいかい')) {
           setShowSimilarProblemButton(true);
@@ -274,7 +297,7 @@ const App: React.FC = () => {
         setHighlightKeywords([]);
     }
 
-  }, [userMessage, selectedProblem, chatHistory]);
+  }, [userMessage, selectedProblem, chatHistory, guestId]);
 
   const generateSimilarProblem = useCallback(async () => {
     if (!selectedProblem) return;
@@ -375,7 +398,7 @@ const App: React.FC = () => {
         const response = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: 'この問題について教えてください。', problem: problem.question, chatHistory: [] }),
+          body: JSON.stringify({ message: 'この問題について教えてください。', problem: problem.question, chatHistory: [], guestId }),
         });
 
         if (!response.ok) {
@@ -383,14 +406,21 @@ const App: React.FC = () => {
         }
 
         const result = await response.json();
-        setChatHistory([{ role: 'model', text: result.teacher, hint: result.hint }]);
+        setChatHistory(result.chatHistory.map((msg: any) => ({
+          role: msg.role === 'user' ? 'user' : 'model',
+          text: msg.content,
+          hint: msg.role === 'assistant' ? result.hint : undefined
+        })));
         setHighlightKeywords(result.highlight || []);
+        if (result.guestId && result.guestId !== guestId) {
+          setGuestId(result.guestId);
+        }
     } catch(err) {
         console.error("Chat Start Error:", err);
         setChatHistory([{ role: 'model', text: 'ごめんなさい、通信がうまくいかなかったようです。' }]);
         setHighlightKeywords([]);
     }
-  }, []);
+  }, [guestId]);
 
   const resetState = () => {
     setAppState('upload');
