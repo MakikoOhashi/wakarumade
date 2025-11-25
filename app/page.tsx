@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { createClient } from '@supabase/supabase-js';
 import { TEACHER_PROMPT } from '../prompts';
 
 // --- Type Definitions ---
@@ -15,6 +16,12 @@ type ChatMessage = {
     hint?: string;
     isLoading?: boolean;
 };
+
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const browserSupabase = SUPABASE_URL && SUPABASE_ANON_KEY
+  ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
 
 // --- Helper Functions ---
 
@@ -134,6 +141,7 @@ const App: React.FC = () => {
   const [highlightKeywords, setHighlightKeywords] = useState<string[]>([]);
   const [language, setLanguage] = useState<'ja' | 'en'>('ja');
   const [guestId, setGuestId] = useState<string>('');
+  const [isRestoringSession, setIsRestoringSession] = useState<boolean>(false);
 
   // --- Refs ---
   const chatBottomRef = useRef<HTMLDivElement>(null);
@@ -168,6 +176,59 @@ const App: React.FC = () => {
       localStorage.setItem('wakarumade_guest_id', guestId);
     }
   }, [guestId]);
+
+  useEffect(() => {
+    if (!guestId || !browserSupabase || selectedProblem) return;
+    let isMounted = true;
+    const restoreSession = async () => {
+      setIsRestoringSession(true);
+      try {
+        const { data, error } = await browserSupabase
+          .from('guest_chat_logs')
+          .select('log, summary')
+          .eq('guest_id', guestId)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (!isMounted) return;
+
+        if (error) {
+          console.error('Failed to restore session from Supabase:', error);
+          return;
+        }
+
+        if (data?.log?.length) {
+          const restoredHistory = data.log.map((entry: any) => ({
+            role: entry.role === 'user' ? 'user' : 'model',
+            text: entry.content,
+            isLoading: false,
+          }));
+
+          setChatHistory(restoredHistory);
+          setAppState('solving');
+          setImageUrl('');
+          setSelectedProblem({
+            number: '保存済み',
+            question: data.summary?.replace(/^Chat session for problem:\s*/i, '') || '保存した問題を再開します。',
+          });
+        }
+      } catch (restoreError) {
+        if (isMounted) {
+          console.error('Unexpected error restoring session:', restoreError);
+        }
+      } finally {
+        if (isMounted) {
+          setIsRestoringSession(false);
+        }
+      }
+    };
+
+    restoreSession();
+    return () => {
+      isMounted = false;
+    };
+  }, [guestId, selectedProblem]);
 
   // --- Core API Functions ---
 
@@ -444,7 +505,7 @@ const App: React.FC = () => {
             </div>
         )}
 
-        {appState === 'upload' && !isLoading && (
+        {appState === 'upload' && !isLoading && !isRestoringSession && (
             <div className="text-center">
                 <div className="flex justify-center mb-4">
                     <button onClick={() => setLanguageAndClearError('ja')} className={`px-4 py-2 rounded ${language === 'ja' ? 'bg-orange-500 text-white' : 'bg-stone-200'}`}>日本語</button>
@@ -458,15 +519,17 @@ const App: React.FC = () => {
             </div>
         )}
 
-        {isLoading && <LoadingSpinner message={loadingMessage} />}
+        {(isLoading || isRestoringSession) && (
+          <LoadingSpinner message={isRestoringSession ? '保存した会話を読み込んでいます…' : loadingMessage} />
+        )}
 
         {appState === 'solving' && !isLoading && (
             <div className="w-full h-full flex flex-col md:flex-row gap-6">
 
               <div className="md:w-3/5 flex items-center justify-center">
-                  {selectedProblem?.number === '類題' ? (
+                  {selectedProblem?.number === '類題' || !imageUrl ? (
                       <div className="text-4xl font-bold text-center text-stone-800 p-4">
-                          {selectedProblem.question}
+                          {selectedProblem?.question ?? ''}
                       </div>
                   ) : (
                       imageUrl && <img src={imageUrl} alt="Uploaded worksheet" className="w-full h-auto object-contain rounded-lg max-h-[80vh]" />
