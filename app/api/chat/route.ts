@@ -3,32 +3,35 @@ import { NextRequest, NextResponse } from 'next/server';
 import { TEACHER_PROMPT } from '../../../prompts';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
 export async function POST(request: NextRequest) {
   try {
-    const { message, problem, chatHistory, guestId } = await request.json();
+    const guestId = request.headers.get("x-guest-id");
+    if (!guestId) {
+      return NextResponse.json({ error: "missing guest id" }, { status: 400 });
+    }
 
-    // Generate guestId if not provided
-    const currentGuestId = guestId || crypto.randomUUID();
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        global: { headers: { "x-guest-id": guestId } }
+      }
+    );
+
+    const { message, problem, chatHistory } = await request.json();
 
     // Load existing chat history from database
     let existingHistory = [];
-    if (currentGuestId) {
-      const { data: existingLog } = await supabase
-        .from('guest_chat_logs')
-        .select('log')
-        .eq('guest_id', currentGuestId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
+    const { data: existingLog } = await supabase
+      .from('guest_chat_logs')
+      .select('log')
+      .eq('guest_id', guestId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
 
-      if (existingLog) {
-        existingHistory = existingLog.log;
-      }
+    if (existingLog) {
+      existingHistory = existingLog.log;
     }
 
     // Combine existing history with new message
@@ -66,23 +69,21 @@ export async function POST(request: NextRequest) {
     const updatedHistory = [...fullHistory, { role: 'assistant', content: result.teacher, timestamp: new Date().toISOString() }];
 
     // Save to database
-    if (currentGuestId) {
-      const { error } = await supabase
-        .from('guest_chat_logs')
-        .upsert({
-          guest_id: currentGuestId,
-          log: updatedHistory,
-          summary: `Chat session for problem: ${problem.substring(0, 100)}...`
-        }, {
-          onConflict: 'guest_id'
-        });
+    const { error } = await supabase
+      .from('guest_chat_logs')
+      .upsert({
+        guest_id: guestId,
+        log: updatedHistory,
+        summary: `Chat session for problem: ${problem.substring(0, 100)}...`
+      }, {
+        onConflict: 'guest_id'
+      });
 
-      if (error) {
-        console.error('Supabase error:', error);
-      }
+    if (error) {
+      console.error('Supabase error:', error);
     }
 
-    return NextResponse.json({ ...result, chatHistory: updatedHistory, guestId: currentGuestId });
+    return NextResponse.json({ ...result, chatHistory: updatedHistory, guestId });
   } catch (error) {
     console.error('Chat API error:', error);
     return NextResponse.json({ error: 'Failed to process chat' }, { status: 500 });

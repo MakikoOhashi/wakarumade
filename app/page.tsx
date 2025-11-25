@@ -265,8 +265,8 @@ const App: React.FC = () => {
         // Call API route for chat
         const response = await fetch('/api/chat', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message, problem: selectedProblem?.question, chatHistory, guestId }),
+          headers: { 'Content-Type': 'application/json', 'x-guest-id': guestId },
+          body: JSON.stringify({ message, problem: selectedProblem?.question, chatHistory }),
         });
 
         if (!response.ok) {
@@ -397,8 +397,8 @@ const App: React.FC = () => {
         // Call API route for initial chat
         const response = await fetch('/api/chat', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: 'この問題について教えてください。', problem: problem.question, chatHistory: [], guestId }),
+          headers: { 'Content-Type': 'application/json', 'x-guest-id': guestId },
+          body: JSON.stringify({ message: 'この問題について教えてください。', problem: problem.question, chatHistory: [] }),
         });
 
         if (!response.ok) {
