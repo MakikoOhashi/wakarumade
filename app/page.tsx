@@ -154,14 +154,12 @@ const App: React.FC = () => {
 
   useEffect(() => {
     // Load or generate guestId
-    const storedGuestId = localStorage.getItem('wakarumade_guest_id');
-    if (storedGuestId) {
-      setGuestId(storedGuestId);
-    } else {
-      const newGuestId = crypto.randomUUID();
-      setGuestId(newGuestId);
-      localStorage.setItem('wakarumade_guest_id', newGuestId);
+    let storedGuestId = localStorage.getItem('wakarumade_guest_id');
+    if (!storedGuestId) {
+      storedGuestId = crypto.randomUUID();
+      localStorage.setItem('wakarumade_guest_id', storedGuestId);
     }
+    setGuestId(storedGuestId);
   }, []);
 
   useEffect(() => {
@@ -386,6 +384,8 @@ const App: React.FC = () => {
   }, [isListening]);
 
   const startChat = useCallback(async (problem: Problem) => {
+    if (!guestId) return; // guestId がセットされるまで待つ
+
     setSelectedProblem(problem);
     setChatHistory([]);
     setHighlightKeywords([]);
