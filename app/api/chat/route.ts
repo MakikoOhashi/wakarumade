@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
       .eq('guest_id', guestId)
       .order('created_at', { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (existingLog) {
       existingHistory = existingLog.log;
