@@ -66,12 +66,31 @@ export async function POST(request: NextRequest) {
     if (!response.text) {
       return NextResponse.json({ error: 'No response text' }, { status: 500 });
     }
-    const jsonMatch = response.text.match(/```(json)?\s*([\s\S]*?)\s*```/);
+    
     let result;
+    // Try to extract JSON from markdown code block first
+    const jsonMatch = response.text.match(/```(json)?\s*([\s\S]*?)\s*```/);
     if (jsonMatch) {
-      result = JSON.parse(jsonMatch[2]);
+      try {
+        result = JSON.parse(jsonMatch[2]);
+      } catch (e) {
+        console.error('Failed to parse JSON from code block:', e);
+        result = { teacher: response.text, hint: '', highlight: [] };
+      }
     } else {
-      result = { teacher: response.text, hint: '', highlight: [] };
+      // Try to parse as JSON directly (in case AI returns JSON without code block)
+      try {
+        const trimmedText = response.text.trim();
+        // Check if it looks like JSON (starts with { and ends with })
+        if (trimmedText.startsWith('{') && trimmedText.endsWith('}')) {
+          result = JSON.parse(trimmedText);
+        } else {
+          result = { teacher: response.text, hint: '', highlight: [] };
+        }
+      } catch (e) {
+        // Not valid JSON, treat as plain text
+        result = { teacher: response.text, hint: '', highlight: [] };
+      }
     }
 
     // Update chat history
