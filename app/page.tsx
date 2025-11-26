@@ -478,36 +478,24 @@ const App: React.FC = () => {
     }
   }, [guestId]);
 
-  const startNewSession = () => {
+  const resetState = () => {
+    // 新しいセッションを開始
     const newGuestId = crypto.randomUUID();
     sessionStorage.setItem('wakarumade_guest_id', newGuestId);
     setGuestId(newGuestId);
 
     // 状態リセット
-    setChatHistory([]);
+    setAppState('upload');
+    setImageFile(null);
+    setImageUrl('');
+    setOcrResults([]);
     setSelectedProblem(null);
+    setChatHistory([]);
     setUserMessage('');
+    setIsLoading(false);
+    setError('');
+    setShowSimilarProblemButton(false);
     setHighlightKeywords([]);
-    setShowSimilarProblemButton(false);
-    setAppState('upload');
-    setImageFile(null);
-    setImageUrl('');
-    setOcrResults([]);
-    setIsLoading(false);
-    setError('');
-  };
-
-  const resetState = () => {
-    setAppState('upload');
-    setImageFile(null);
-    setImageUrl('');
-    setOcrResults([]);
-    setSelectedProblem(null);
-    setChatHistory([]);
-    setUserMessage('');
-    setIsLoading(false);
-    setError('');
-    setShowSimilarProblemButton(false);
   };
 
   return (
@@ -570,11 +558,6 @@ const App: React.FC = () => {
 
                   {selectedProblem && (
                     <div className="flex flex-col h-full max-h-[90vh]">
-                        <div className="mb-2 flex justify-end">
-                            <button onClick={startNewSession} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded-full text-sm transition-colors">
-                                新しいセッションに切り替える
-                            </button>
-                        </div>
                         <div className="flex-grow overflow-y-auto mb-4 pr-2 space-y-4">
                             {chatHistory.map((msg, index) => (
                                 <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
