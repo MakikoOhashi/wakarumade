@@ -146,6 +146,7 @@ const App: React.FC = () => {
   // --- Refs ---
   const chatBottomRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null); // For SpeechRecognition instance
+  const hasRestoredSessionRef = useRef<boolean>(false); // セッション復元を一度だけ実行するためのフラグ
 
   // --- Effects ---
   useEffect(() => {
@@ -171,10 +172,12 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (!guestId || !browserSupabase || selectedProblem) return;
+    // セッション復元は初期ロード時のみ実行（guestId が設定された時のみ）
+    if (!guestId || !browserSupabase || selectedProblem || hasRestoredSessionRef.current) return;
     let isMounted = true;
     const restoreSession = async () => {
       setIsRestoringSession(true);
+      hasRestoredSessionRef.current = true; // 実行済みフラグを設定
       try {
         const { data, error } = await browserSupabase
           .from('guest_chat_logs')
@@ -221,7 +224,7 @@ const App: React.FC = () => {
     return () => {
       isMounted = false;
     };
-  }, [guestId, selectedProblem]);
+  }, [guestId]); // selectedProblem を依存配列から削除
 
   // --- Core API Functions ---
 
@@ -483,6 +486,8 @@ const App: React.FC = () => {
 
   const selectDifferentProblem = () => {
     // 問題選択画面に戻る（画像とOCR結果は保持）
+    // セッション復元をスキップするためにフラグを設定
+    hasRestoredSessionRef.current = true;
     setSelectedProblem(null);
     setChatHistory([]);
     setUserMessage('');
@@ -495,6 +500,7 @@ const App: React.FC = () => {
     const newGuestId = crypto.randomUUID();
     sessionStorage.setItem('wakarumade_guest_id', newGuestId);
     setGuestId(newGuestId);
+    hasRestoredSessionRef.current = false; // セッション復元フラグをリセット
 
     // 状態リセット
     setAppState('upload');
