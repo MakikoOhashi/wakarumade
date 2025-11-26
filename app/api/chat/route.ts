@@ -44,10 +44,19 @@ export async function POST(request: NextRequest) {
 
     const ai = new GoogleGenAI({ apiKey });
 
-    // Create chat session
+    // Prepare conversation history for AI (excluding timestamps and filtering valid roles)
+    const conversationHistory = existingHistory
+      .filter((entry: any) => entry.role === 'user' || entry.role === 'assistant')
+      .map((entry: any) => ({
+        role: entry.role === 'user' ? 'user' : 'model',
+        parts: [{ text: entry.content }]
+      }));
+
+    // Create chat session with history
     const chat = ai.chats.create({
       model: 'gemini-2.5-flash',
       config: { systemInstruction: `${TEACHER_PROMPT}\n\n# Problem Text:\n${problem}` },
+      history: conversationHistory,
     });
 
     // Send message
