@@ -50,6 +50,11 @@ const fileToGenerativePart = async (file: File) => {
   };
 };
 
+const getProblemId = (problem: Problem): string => {
+  const numberPart = problem.number ?? 'unknown';
+  return `${numberPart}::${problem.question}`;
+};
+
 // --- UI Components ---
 
 const LoadingSpinner: React.FC<{ message: string }> = ({ message }) => (
@@ -321,7 +326,12 @@ const App: React.FC = () => {
         const response = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-guest-id': guestId },
-          body: JSON.stringify({ message, problem: selectedProblem?.question, chatHistory }),
+          body: JSON.stringify({
+            message,
+            problem: selectedProblem?.question,
+            problemId: selectedProblem ? getProblemId(selectedProblem) : undefined,
+            chatHistory,
+          }),
         });
 
         if (!response.ok) {
@@ -468,6 +478,7 @@ const App: React.FC = () => {
           .from('guest_chat_logs')
           .select('log, summary')
           .eq('guest_id', guestId)
+          .eq('problem_id', getProblemId(problem))
           .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle();
@@ -497,7 +508,12 @@ const App: React.FC = () => {
         const response = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-guest-id': guestId },
-          body: JSON.stringify({ message: 'この問題について教えてください。', problem: problem.question, chatHistory: [] }),
+          body: JSON.stringify({
+            message: 'この問題について教えてください。',
+            problem: problem.question,
+            problemId: getProblemId(problem),
+            chatHistory: [],
+          }),
         });
 
         if (!response.ok) {

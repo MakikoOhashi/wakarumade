@@ -18,7 +18,8 @@ export async function POST(request: NextRequest) {
       }
     );
 
-    const { message, problem, chatHistory } = await request.json();
+    const { message, problem, problemId, chatHistory } = await request.json();
+    const effectiveProblemId = problemId ?? problem ?? 'unknown-problem';
 
     // Load existing chat history from database
     let existingHistory = [];
@@ -26,6 +27,7 @@ export async function POST(request: NextRequest) {
       .from('guest_chat_logs')
       .select('log')
       .eq('guest_id', guestId)
+      .eq('problem_id', effectiveProblemId)
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -101,10 +103,11 @@ export async function POST(request: NextRequest) {
       .from('guest_chat_logs')
       .upsert({
         guest_id: guestId,
+        problem_id: effectiveProblemId,
         log: updatedHistory,
-        summary: `Chat session for problem: ${problem.substring(0, 100)}...`
+        summary: `Chat session for problem: ${problem?.substring(0, 100) ?? 'N/A'}...`
       }, {
-        onConflict: 'guest_id'
+        onConflict: 'guest_id,problem_id'
       });
 
     if (error) {
