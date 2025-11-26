@@ -382,13 +382,23 @@ const App: React.FC = () => {
         const result = await response.json();
         const newProblem: Problem = { number: '類題', question: result.question };
 
+        // 類題を ocrResults に追加して、問題選択画面に表示されるようにする
+        setOcrResults(prev => {
+          // 既に同じ類題が存在するかチェック（重複を避ける）
+          const exists = prev.some(p => p.number === '類題' && p.question === newProblem.question);
+          if (exists) {
+            return prev;
+          }
+          return [...prev, newProblem];
+        });
+
         await startChat(newProblem);
 
     } catch (err) {
       console.error("Similar Problem Generation Error:", err);
       setError('ごめんなさい、類題をうまく作れませんでした。');
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
 }, [selectedProblem]);
 
