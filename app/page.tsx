@@ -445,17 +445,45 @@ const App: React.FC = () => {
   }, [isListening]);
 
   const startChat = useCallback(async (problem: Problem) => {
-    if (!guestId) return; // guestId がセットされるまで待つ
+    if (!guestId || !browserSupabase) return; // guestId がセットされるまで待つ
 
     setSelectedProblem(problem);
     setChatHistory([]);
     setHighlightKeywords([]);
     setShowSimilarProblemButton(false);
 
-    setChatHistory([{ role: 'model', text: '先生が考え中…', isLoading: true }]);
-
     try {
-        // Call API route for initial chat
+        // 既存のチャット履歴を確認
+        const { data: existingLog, error: fetchError } = await browserSupabase
+          .from('guest_chat_logs')
+          .select('log, summary')
+          .eq('guest_id', guestId)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (fetchError) {
+          console.error('Failed to fetch existing chat history:', fetchError);
+        }
+
+        // 既存の履歴があり、同じ問題に対する履歴があるか確認
+        const hasExistingHistory = existingLog?.log && existingLog.log.length > 0;
+        const isSameProblem = existingLog?.summary?.includes(problem.question.substring(0, 50));
+
+        if (hasExistingHistory && isSameProblem && existingLog) {
+          // 既存の履歴を復元（初期メッセージを送信しない）
+          const restoredHistory = existingLog.log.map((entry: any) => ({
+            role: entry.role === 'user' ? 'user' : 'model',
+            text: entry.content,
+            isLoading: false,
+          }));
+          setChatHistory(restoredHistory);
+          return; // 初期メッセージを送信せずに終了
+        }
+
+        // 既存の履歴がない場合のみ、初期メッセージを送信
+        setChatHistory([{ role: 'model', text: '先生が考え中…', isLoading: true }]);
+
         const response = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-guest-id': guestId },
