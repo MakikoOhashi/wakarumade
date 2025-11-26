@@ -478,6 +478,15 @@ const App: React.FC = () => {
     }
   }, [guestId]);
 
+  const selectDifferentProblem = () => {
+    // 問題選択画面に戻る（画像とOCR結果は保持）
+    setSelectedProblem(null);
+    setChatHistory([]);
+    setUserMessage('');
+    setHighlightKeywords([]);
+    setShowSimilarProblemButton(false);
+  };
+
   const resetState = () => {
     // 新しいセッションを開始
     const newGuestId = crypto.randomUUID();
@@ -586,7 +595,7 @@ const App: React.FC = () => {
                                 </button>
                             </div>
                              <div className="flex justify-between mt-3">
-                                 <button onClick={() => setSelectedProblem(null)} className="bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold py-2 px-4 rounded-full transition-colors">← 別の問題を選ぶ</button>
+                                 <button onClick={selectDifferentProblem} className="bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold py-2 px-4 rounded-full transition-colors">← 別の問題を選ぶ</button>
                                  <button onClick={resetState} className="bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold py-2 px-4 rounded-full transition-colors">はじめからやり直す →</button>
                              </div>
                         </div>
