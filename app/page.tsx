@@ -162,20 +162,13 @@ const App: React.FC = () => {
 
   useEffect(() => {
     // Load or generate guestId
-    let storedGuestId = localStorage.getItem('wakarumade_guest_id');
+    let storedGuestId = sessionStorage.getItem('wakarumade_guest_id');
     if (!storedGuestId) {
       storedGuestId = crypto.randomUUID();
-      localStorage.setItem('wakarumade_guest_id', storedGuestId);
+      sessionStorage.setItem('wakarumade_guest_id', storedGuestId);
     }
     setGuestId(storedGuestId);
   }, []);
-
-  useEffect(() => {
-    // Save guestId to localStorage when it changes
-    if (guestId) {
-      localStorage.setItem('wakarumade_guest_id', guestId);
-    }
-  }, [guestId]);
 
   useEffect(() => {
     if (!guestId || !browserSupabase || selectedProblem) return;
@@ -340,6 +333,7 @@ const App: React.FC = () => {
         })));
         setHighlightKeywords(result.highlight || []);
         if (result.guestId && result.guestId !== guestId) {
+          sessionStorage.setItem('wakarumade_guest_id', result.guestId);
           setGuestId(result.guestId);
         }
 
@@ -474,6 +468,7 @@ const App: React.FC = () => {
         })));
         setHighlightKeywords(result.highlight || []);
         if (result.guestId && result.guestId !== guestId) {
+          sessionStorage.setItem('wakarumade_guest_id', result.guestId);
           setGuestId(result.guestId);
         }
     } catch(err) {
@@ -482,6 +477,25 @@ const App: React.FC = () => {
         setHighlightKeywords([]);
     }
   }, [guestId]);
+
+  const startNewSession = () => {
+    const newGuestId = crypto.randomUUID();
+    sessionStorage.setItem('wakarumade_guest_id', newGuestId);
+    setGuestId(newGuestId);
+
+    // 状態リセット
+    setChatHistory([]);
+    setSelectedProblem(null);
+    setUserMessage('');
+    setHighlightKeywords([]);
+    setShowSimilarProblemButton(false);
+    setAppState('upload');
+    setImageFile(null);
+    setImageUrl('');
+    setOcrResults([]);
+    setIsLoading(false);
+    setError('');
+  };
 
   const resetState = () => {
     setAppState('upload');
@@ -556,6 +570,11 @@ const App: React.FC = () => {
 
                   {selectedProblem && (
                     <div className="flex flex-col h-full max-h-[90vh]">
+                        <div className="mb-2 flex justify-end">
+                            <button onClick={startNewSession} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded-full text-sm transition-colors">
+                                新しいセッションに切り替える
+                            </button>
+                        </div>
                         <div className="flex-grow overflow-y-auto mb-4 pr-2 space-y-4">
                             {chatHistory.map((msg, index) => (
                                 <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
