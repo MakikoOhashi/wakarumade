@@ -25,15 +25,34 @@ export async function POST(request: NextRequest) {
     let existingHistory = [];
     const { data: existingLog } = await supabase
       .from('guest_chat_logs')
-      .select('log')
+      .select('log, summary, problem_id')
       .eq('guest_id', guestId)
       .eq('problem_id', effectiveProblemId)
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle();
 
-    if (existingLog) {
-      existingHistory = existingLog.log;
+    let historySource: any | null = existingLog ?? null;
+
+    // Fallback for legacy rows without problem_id (or mismatched IDs)
+    if (!historySource && problem) {
+      const snippet = problem.substring(0, Math.min(50, problem.length));
+      if (snippet) {
+        const { data: legacyLogs } = await supabase
+          .from('guest_chat_logs')
+          .select('log, summary, problem_id')
+          .eq('guest_id', guestId)
+          .order('created_at', { ascending: false })
+          .limit(5);
+
+        historySource = legacyLogs?.find((entry: any) =>
+          entry.summary?.includes(snippet)
+        );
+      }
+    }
+
+    if (historySource?.log) {
+      existingHistory = historySource.log;
     }
 
     // Combine existing history with new message

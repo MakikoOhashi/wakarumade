@@ -476,7 +476,7 @@ const App: React.FC = () => {
         // 既存のチャット履歴を確認
         const { data: existingLog, error: fetchError } = await browserSupabase
           .from('guest_chat_logs')
-          .select('log, summary')
+          .select('log')
           .eq('guest_id', guestId)
           .eq('problem_id', getProblemId(problem))
           .order('created_at', { ascending: false })
@@ -489,9 +489,8 @@ const App: React.FC = () => {
 
         // 既存の履歴があり、同じ問題に対する履歴があるか確認
         const hasExistingHistory = existingLog?.log && existingLog.log.length > 0;
-        const isSameProblem = existingLog?.summary?.includes(problem.question.substring(0, 50));
 
-        if (hasExistingHistory && isSameProblem && existingLog) {
+        if (hasExistingHistory && existingLog) {
           // 既存の履歴を復元（初期メッセージを送信しない）
           const restoredHistory = existingLog.log.map((entry: any) => ({
             role: entry.role === 'user' ? 'user' : 'model',
