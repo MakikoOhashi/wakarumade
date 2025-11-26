@@ -53,6 +53,15 @@ export async function POST(request: NextRequest) {
 
     if (historySource?.log) {
       existingHistory = historySource.log;
+    } else if (Array.isArray(chatHistory) && chatHistory.length > 0) {
+      // Fallback to client-provided history to avoid losing context
+      existingHistory = chatHistory
+        .filter((entry: any) => entry.role === 'user' || entry.role === 'model' || entry.role === 'assistant')
+        .map((entry: any) => ({
+          role: entry.role === 'user' ? 'user' : 'assistant',
+          content: entry.text ?? entry.content ?? '',
+          timestamp: entry.timestamp ?? new Date().toISOString(),
+        }));
     }
 
     // Combine existing history with new message
