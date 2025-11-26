@@ -348,6 +348,9 @@ const App: React.FC = () => {
           return newHistory;
         });
         setHighlightKeywords([]);
+    } finally {
+        // エラーが発生しても確実にテキストボックスをクリア
+        setUserMessage('');
     }
 
   }, [userMessage, selectedProblem, chatHistory, guestId]);
