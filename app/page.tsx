@@ -607,7 +607,7 @@ const App: React.FC = () => {
         setChatHistory([{ role: 'model', text: texts[language].communicationError }]);
         setHighlightKeywords([]);
     }
-  }, [guestId]);
+  }, [guestId, language]);
 
   const selectDifferentProblem = () => {
     // 問題選択画面に戻る（画像とOCR結果は保持）
