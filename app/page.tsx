@@ -160,8 +160,8 @@ const App: React.FC = () => {
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatHistory, isLoading]);
 
-  useEffect(() => {
-    // Google Translate initialization
+  // Google Translate initialization
+  if (typeof window !== 'undefined') {
     (window as any).googleTranslateElementInit = function() {
       new (window as any).google.translate.TranslateElement({
         pageLanguage: 'ja',
@@ -169,7 +169,7 @@ const App: React.FC = () => {
         layout: (window as any).google.translate.TranslateElement.InlineLayout.SIMPLE
       }, 'google_translate_element');
     };
-  }, []);
+  }
 
   useEffect(() => {
     // Cleanup SpeechRecognition instance on component unmount
