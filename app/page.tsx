@@ -119,6 +119,7 @@ const App: React.FC = () => {
       errorOcr: 'ごめんね、プリントから問題を見つけられなかったみたい。別のしゃしんで試してみてね。',
       selectProblem: 'もんだいを選びましょう',
       selectPhoto: '写真を選ぶ',
+      reset: 'はじめからやり直す',
     },
     en: {
       title: 'Until You Understand/WAKARUMADE',
@@ -130,6 +131,7 @@ const App: React.FC = () => {
       errorOcr: 'Sorry, couldn\'t find problems in the worksheet. Please try another image.',
       selectProblem: 'Choose a problem',
       selectPhoto: 'Select a photo',
+      reset: 'Start over',
     }
   };
 
@@ -668,7 +670,7 @@ const App: React.FC = () => {
                                   ))}
                               </ul>
                           </div>
-                          <button onClick={resetState} className="mt-4 bg-stone-500 hover:bg-stone-600 text-white font-bold py-2 px-4 rounded-full transition-colors self-start">はじめからやり直す</button>
+                          <button onClick={resetState} className="mt-4 bg-stone-500 hover:bg-stone-600 text-white font-bold py-2 px-4 rounded-full transition-colors self-start">{texts[language].reset}</button>
                       </div>
                   )}
 
