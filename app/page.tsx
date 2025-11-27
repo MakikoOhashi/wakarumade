@@ -119,7 +119,7 @@ const App: React.FC = () => {
       errorOcr: 'ごめんね、プリントから問題を見つけられなかったみたい。別のしゃしんで試してみてね。',
     },
     en: {
-      title: 'Until You Understand',
+      title: 'Until You Understand/WAKARUMADE',
       takePhoto: 'Take a Photo',
       loadingConverting: 'Converting HEIC image...',
       loadingProcessing: 'Reading worksheet...',
