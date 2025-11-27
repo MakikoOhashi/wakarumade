@@ -117,6 +117,7 @@ const App: React.FC = () => {
       errorNoFile: 'ファイルが選択されていません。',
       errorConversion: 'ごめんね、しゃしんの変換に失敗しました。別の形式で試してみてね。',
       errorOcr: 'ごめんね、プリントから問題を見つけられなかったみたい。別のしゃしんで試してみてね。',
+      selectProblem: 'もんだいを選びましょう',
     },
     en: {
       title: 'Until You Understand/WAKARUMADE',
@@ -126,6 +127,7 @@ const App: React.FC = () => {
       errorNoFile: 'No file selected.',
       errorConversion: 'Sorry, image conversion failed. Please try another format.',
       errorOcr: 'Sorry, couldn\'t find problems in the worksheet. Please try another image.',
+      selectProblem: 'Choose a problem',
     }
   };
 
@@ -653,7 +655,7 @@ const App: React.FC = () => {
               <div className="md:w-2/5 flex flex-col h-full pb-8">
                   {!selectedProblem && ocrResults.length > 0 && (
                       <div className="flex flex-col h-full">
-                          <h2 className="text-2xl font-bold mb-4 text-stone-800">もんだいを選びましょう</h2>
+                          <h2 className="text-2xl font-bold mb-4 text-stone-800">{texts[language].selectProblem}</h2>
                           <div className="overflow-y-auto flex-grow">
                               <ul className="space-y-3">
                                   {ocrResults.map((problem, index) => (
