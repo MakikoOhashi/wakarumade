@@ -1,6 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
 import { NextRequest, NextResponse } from 'next/server';
-import { TEACHER_PROMPT, TEACHER_PROMPT_EN, SUMMARY_PROMPT } from '../../../prompts';
+import { TEACHER_PROMPT, TEACHER_PROMPT_EN, SUMMARY_PROMPT, SUMMARY_PROMPT_EN } from '../../../prompts';
 import { createClient } from '@supabase/supabase-js';
 
 export async function POST(request: NextRequest) {
@@ -130,27 +130,34 @@ export async function POST(request: NextRequest) {
     // Generate summary using AI
     let summaryText = '';
     try {
+      const summarySystemPrompt = language === 'en' ? SUMMARY_PROMPT_EN : SUMMARY_PROMPT;
       const summaryChat = ai.chats.create({
         model: 'gemini-2.5-flash',
-        config: { systemInstruction: SUMMARY_PROMPT },
+        config: { systemInstruction: summarySystemPrompt },
       });
 
       const conversationText = updatedHistory
         .filter((entry: any) => entry.role === 'user' || entry.role === 'assistant')
-        .map((entry: any) => `${entry.role === 'user' ? '生徒' : '先生'}: ${entry.content}`)
+        .map((entry: any) => `${entry.role === 'user' ? (language === 'en' ? 'Student' : '生徒') : (language === 'en' ? 'Teacher' : '先生')}: ${entry.content}`)
         .join('\n');
 
-      const summaryPrompt = `問題文: ${problem}\n\n会話履歴:\n${conversationText}`;
+      const summaryPrompt = language === 'en'
+        ? `Problem text: ${problem}\n\nConversation history:\n${conversationText}`
+        : `問題文: ${problem}\n\n会話履歴:\n${conversationText}`;
 
       const summaryResponse = await summaryChat.sendMessage({ message: summaryPrompt });
       if (summaryResponse.text) {
         const summaryJsonMatch = summaryResponse.text.match(/```(json)?\s*([\s\S]*?)\s*```/);
         if (summaryJsonMatch) {
-          const summaryData = JSON.parse(summaryJsonMatch[2]);
-          summaryText = `間違いの原因: ${summaryData.mistake_reason}\n強化すべきポイント: ${summaryData.strengthen_point}`;
-        } else {
-          summaryText = `Chat session for problem: ${problem?.substring(0, 100) ?? 'N/A'}...`;
-        }
+           const summaryData = JSON.parse(summaryJsonMatch[2]);
+           summaryText = language === 'en'
+             ? `Mistake reason: ${summaryData.mistake_reason}\nArea to strengthen: ${summaryData.strengthen_point}`
+             : `間違いの原因: ${summaryData.mistake_reason}\n強化すべきポイント: ${summaryData.strengthen_point}`;
+         } else {
+           summaryText = language === 'en'
+             ? `Chat session for problem: ${problem?.substring(0, 100) ?? 'N/A'}...`
+             : `問題のチャットセッション: ${problem?.substring(0, 100) ?? 'N/A'}...`;
+         }
       } else {
         summaryText = `Chat session for problem: ${problem?.substring(0, 100) ?? 'N/A'}...`;
       }
