@@ -15,10 +15,10 @@ export async function POST(request: NextRequest) {
     const isEnglish = language === 'en';
     const textPrompt = summary
       ? (isEnglish
-          ? `Create one similar math word problem for elementary school students based on "${question}". Change the numbers and content. Consider the student's learning situation based on ${summary} to create an appropriate difficulty and content problem. Result in JSON format with only the problem text in the 'question' key.`
+          ? `Create one similar English math word problem for elementary school students based on "${question}". Change the numbers and content. Consider the student's learning situation based on ${summary} to create an appropriate difficulty and content problem. Create the problem entirely in English. Result in JSON format with only the problem text in the 'question' key.`
           : `「${question}」という日本の小学生向けの算数の問題に似た問題を1つだけ作成してください。数字や内容は変えてください。この生徒の学習状況を考慮して、${summary}に基づいて適切な難易度と内容の問題を作成してください。結果はJSON形式で、'question'というキーに問題文のみを入れてください。`)
       : (isEnglish
-          ? `Create one similar math word problem for elementary school students based on "${question}". Change the numbers and content. Result in JSON format with only the problem text in the 'question' key.`
+          ? `Create one similar English math word problem for elementary school students based on "${question}". Change the numbers and content. Create the problem entirely in English. Result in JSON format with only the problem text in the 'question' key.`
           : `「${question}」という日本の小学生向けの算数の問題に似た問題を1つだけ作成してください。数字や内容は変えてください。結果はJSON形式で、'question'というキーに問題文のみを入れてください。`);
 
     const textResponse = await ai.models.generateContent({
