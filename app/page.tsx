@@ -608,10 +608,16 @@ const App: React.FC = () => {
                     <button onClick={() => setLanguageAndClearError('en')} className={`px-4 py-2 rounded ml-2 ${language === 'en' ? 'bg-orange-500 text-white' : 'bg-stone-200'}`}>English</button>
                 </div>
                 <h1 className="text-4xl md:text-5xl font-bold text-500 mb-20">{texts[language].title}</h1>
-                <input type="file" id="file-upload" accept="image/*,.heic" capture="environment" onChange={handleImageChange} className="hidden" />
-                <label htmlFor="file-upload" className="cursor-pointer inline-block bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-8 rounded-full text-xl shadow-md transition-transform transform hover:scale-105">
-                    {texts[language].takePhoto}
-                </label>
+                <div className="flex flex-col items-center gap-4">
+                    <input type="file" id="camera-upload" accept="image/*,.heic" capture="environment" onChange={handleImageChange} className="hidden" />
+                    <label htmlFor="camera-upload" className="cursor-pointer inline-block bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-8 rounded-full text-xl shadow-md transition-transform transform hover:scale-105">
+                        {texts[language].takePhoto}
+                    </label>
+                    <input type="file" id="file-upload" accept="image/*,.heic" onChange={handleImageChange} className="hidden" />
+                    <label htmlFor="file-upload" className="cursor-pointer text-stone-600 hover:text-stone-800 text-sm underline">
+                        写真を選ぶ
+                    </label>
+                </div>
             </div>
         )}
 
