@@ -618,6 +618,12 @@ const App: React.FC = () => {
     setUserMessage('');
     setHighlightKeywords([]);
     setShowSimilarProblemButton(false);
+    // OCR結果がない場合、アップロード画面に戻る
+    if (ocrResults.length === 0) {
+      setAppState('upload');
+      setImageFile(null);
+      setImageUrl('');
+    }
   };
 
   const resetState = () => {
