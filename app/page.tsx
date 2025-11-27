@@ -118,6 +118,7 @@ const App: React.FC = () => {
       errorConversion: 'ごめんね、しゃしんの変換に失敗しました。別の形式で試してみてね。',
       errorOcr: 'ごめんね、プリントから問題を見つけられなかったみたい。別のしゃしんで試してみてね。',
       selectProblem: 'もんだいを選びましょう',
+      selectPhoto: '写真を選ぶ',
     },
     en: {
       title: 'Until You Understand/WAKARUMADE',
@@ -128,6 +129,7 @@ const App: React.FC = () => {
       errorConversion: 'Sorry, image conversion failed. Please try another format.',
       errorOcr: 'Sorry, couldn\'t find problems in the worksheet. Please try another image.',
       selectProblem: 'Choose a problem',
+      selectPhoto: 'Select a photo',
     }
   };
 
@@ -629,7 +631,7 @@ const App: React.FC = () => {
                     </label>
                     <input type="file" id="file-upload" accept="image/*,.heic" onChange={handleImageChange} className="hidden" />
                     <label htmlFor="file-upload" className="cursor-pointer text-stone-600 hover:text-stone-800 text-sm underline">
-                        写真を選ぶ
+                        {texts[language].selectPhoto}
                     </label>
                 </div>
             </div>
