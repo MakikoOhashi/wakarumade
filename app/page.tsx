@@ -143,6 +143,7 @@ const App: React.FC = () => {
   const [showSimilarProblemButton, setShowSimilarProblemButton] = useState<boolean>(false);
   const [isListening, setIsListening] = useState<boolean>(false);
   const [isCorrecting, setIsCorrecting] = useState<boolean>(false);
+  const [isSendingMessage, setIsSendingMessage] = useState<boolean>(false);
   const [highlightKeywords, setHighlightKeywords] = useState<string[]>([]);
   const [language, setLanguage] = useState<'ja' | 'en'>('ja');
   const [guestId, setGuestId] = useState<string>('');
@@ -313,9 +314,12 @@ const App: React.FC = () => {
 
   const handleSendMessage = useCallback(async (messageOverride?: string) => {
     const message = messageOverride || userMessage;
-    if (!message.trim()) return;
+    if (!message.trim() || isSendingMessage) return;
 
+    // 送信直後にテキストをクリアして二重送信を防ぐ
     setUserMessage('');
+    setIsSendingMessage(true);
+    
     setChatHistory(prev => [...prev, { role: 'user', text: message }]);
     setChatHistory(prev => [...prev, { role: 'model', text: '先生が考え中…', isLoading: true }]);
     setShowSimilarProblemButton(false);
@@ -364,9 +368,10 @@ const App: React.FC = () => {
     } finally {
         // エラーが発生しても確実にテキストボックスをクリア
         setUserMessage('');
+        setIsSendingMessage(false);
     }
 
-  }, [userMessage, selectedProblem, chatHistory, guestId]);
+  }, [userMessage, selectedProblem, chatHistory, guestId, isSendingMessage]);
 
   const generateSimilarProblem = useCallback(async () => {
     if (!selectedProblem) return;
@@ -648,11 +653,11 @@ const App: React.FC = () => {
                                 <button onClick={generateSimilarProblem} className="w-full mb-3 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full transition-colors">似た問題にチャレンジ！</button>
                             )}
                             <div className="flex items-center gap-2">
-                                <textarea value={userMessage} onChange={(e) => setUserMessage(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } }} placeholder="先生へのメッセージ" className="flex-grow p-3 border-2 border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400" rows={2} disabled={isLoading} />
-                                <button onClick={handleToggleListening} disabled={isLoading || isCorrecting} className={`p-3 rounded-full transition-colors ${isListening ? 'bg-red-200' : 'bg-stone-200 hover:bg-stone-300'}`}>
+                                <textarea value={userMessage} onChange={(e) => setUserMessage(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } }} placeholder="先生へのメッセージ" className="flex-grow p-3 border-2 border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400" rows={2} disabled={isLoading || isSendingMessage} />
+                                <button onClick={handleToggleListening} disabled={isLoading || isCorrecting || isSendingMessage} className={`p-3 rounded-full transition-colors ${isListening ? 'bg-red-200' : 'bg-stone-200 hover:bg-stone-300'}`}>
                                     {isCorrecting ? <CorrectionSpinner /> : (isListening ? <RecordingIcon /> : <MicIcon />)}
                                 </button>
-                                <button onClick={() => handleSendMessage()} disabled={isLoading || !userMessage.trim()} className="bg-orange-500 hover:bg-orange-600 text-white font-bold p-3 rounded-full disabled:bg-stone-300 disabled:cursor-not-allowed transition-colors">
+                                <button onClick={() => handleSendMessage()} disabled={isLoading || isSendingMessage || !userMessage.trim()} className="bg-orange-500 hover:bg-orange-600 text-white font-bold p-3 rounded-full disabled:bg-stone-300 disabled:cursor-not-allowed transition-colors">
                                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h14M12 5l7 7-7 7" /></svg>
                                 </button>
                             </div>
