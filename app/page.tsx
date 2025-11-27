@@ -404,7 +404,7 @@ const App: React.FC = () => {
           setGuestId(result.guestId);
         }
 
-        if (result.teacher.includes('正解') || result.teacher.includes('せいかい') || result.teacher.includes('Correct!')) {
+        if (result.teacher.includes('正解') || result.teacher.includes('せいかい') || result.teacher.includes('Correct!') || result.teacher.includes('correct!')) {
           setShowSimilarProblemButton(true);
         }
     } catch(err) {
