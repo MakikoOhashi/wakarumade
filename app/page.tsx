@@ -664,7 +664,16 @@ const App: React.FC = () => {
                     <button onClick={() => setLanguageAndClearError('ja')} className={`px-4 py-2 rounded ${language === 'ja' ? 'bg-orange-500 text-white' : 'bg-stone-200'}`}>日本語</button>
                     <button onClick={() => setLanguageAndClearError('en')} className={`px-4 py-2 rounded ml-2 ${language === 'en' ? 'bg-orange-500 text-white' : 'bg-stone-200'}`}>English</button>
                 </div>
-                <h1 className="text-4xl md:text-5xl font-bold text-500 mb-4">{texts[language].title}</h1>
+                <h1 className="text-4xl md:text-5xl font-bold text-500 mb-4">
+                  {language === 'en' ? (
+                    <>
+                      Until You Understand<br />
+                      WAKARUMADE
+                    </>
+                  ) : (
+                    texts[language].title
+                  )}
+                </h1>
                 <p className="text-xl md:text-2xl text-stone-500 mb-16">{texts[language].subtitle}</p>
                 <div className="flex flex-col items-center gap-4">
                     <input type="file" id="camera-upload" accept="image/*,.heic" capture="environment" onChange={handleImageChange} className="hidden" />
