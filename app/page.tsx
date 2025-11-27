@@ -120,6 +120,19 @@ const App: React.FC = () => {
       selectProblem: 'もんだいを選びましょう',
       selectPhoto: '写真を選ぶ',
       reset: 'はじめからやり直す',
+      messagePlaceholder: '先生へのメッセージ',
+      selectDifferentProblem: '← 別の問題を選ぶ',
+      resetRight: 'はじめからやり直す →',
+      thinking: '先生が考え中…',
+      communicationError: 'ごめんなさい、通信がうまくいかなかったようです。',
+      restoringSession: '保存した会話を読み込んでいます…',
+      generatingSimilar: '類題を作成中…',
+      similarError: 'ごめんなさい、類題をうまく作れませんでした。',
+      speechNotSupported: 'ごめんなさい、お使いのブラウザは音声入力に対応していません。',
+      speechError: '音声の聞き取りに失敗しました。',
+      initialMessage: 'この問題について教えてください。',
+      similarProblemButton: '似た問題にチャレンジ！',
+      savedProblem: '保存した問題を再開します。',
     },
     en: {
       title: 'Until You Understand/WAKARUMADE',
@@ -132,6 +145,19 @@ const App: React.FC = () => {
       selectProblem: 'Choose a problem',
       selectPhoto: 'Select a photo',
       reset: 'Start over',
+      messagePlaceholder: 'Message to teacher',
+      selectDifferentProblem: '← Choose another problem',
+      resetRight: 'Start over →',
+      thinking: 'Teacher is thinking...',
+      communicationError: 'Sorry, there was a communication error.',
+      restoringSession: 'Loading saved conversation...',
+      generatingSimilar: 'Generating similar problem...',
+      similarError: 'Sorry, couldn\'t generate a similar problem.',
+      speechNotSupported: 'Sorry, your browser doesn\'t support voice input.',
+      speechError: 'Failed to recognize speech.',
+      initialMessage: 'Please teach me about this problem.',
+      similarProblemButton: 'Try a similar problem!',
+      savedProblem: 'Resume saved problem.',
     }
   };
 
@@ -230,7 +256,7 @@ const App: React.FC = () => {
           setImageUrl('');
           setSelectedProblem({
             number: '保存済み',
-            question: data.summary || '保存した問題を再開します。',
+            question: data.summary || texts[language].savedProblem,
           });
         }
       } catch (restoreError) {
@@ -339,7 +365,7 @@ const App: React.FC = () => {
     setIsSendingMessage(true);
     
     setChatHistory(prev => [...prev, { role: 'user', text: message }]);
-    setChatHistory(prev => [...prev, { role: 'model', text: '先生が考え中…', isLoading: true }]);
+    setChatHistory(prev => [...prev, { role: 'model', text: texts[language].thinking, isLoading: true }]);
     setShowSimilarProblemButton(false);
     setHighlightKeywords([]);
 
@@ -379,7 +405,7 @@ const App: React.FC = () => {
         console.error("Chat Error:", err);
         setChatHistory(prev => {
           const newHistory = [...prev];
-          newHistory[newHistory.length - 1] = { role: 'model', text: 'ごめんなさい、通信がうまくいかなかったようです。' };
+          newHistory[newHistory.length - 1] = { role: 'model', text: texts[language].communicationError };
           return newHistory;
         });
         setHighlightKeywords([]);
@@ -395,7 +421,7 @@ const App: React.FC = () => {
     if (!selectedProblem || !guestId || !browserSupabase) return;
 
     setIsLoading(true);
-    setLoadingMessage('類題を作成中…');
+    setLoadingMessage(texts[language].generatingSimilar);
     setShowSimilarProblemButton(false);
     setChatHistory([]);
     setHighlightKeywords([]);
@@ -447,7 +473,7 @@ const App: React.FC = () => {
 
     } catch (err) {
       console.error("Similar Problem Generation Error:", err);
-      setError('ごめんなさい、類題をうまく作れませんでした。');
+      setError(texts[language].similarError);
     } finally {
       setIsLoading(false);
     }
@@ -461,7 +487,7 @@ const App: React.FC = () => {
 
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
-        setError('ごめんなさい、お使いのブラウザは音声入力に対応していません。');
+        setError(texts[language].speechNotSupported);
         return;
     }
 
@@ -473,7 +499,7 @@ const App: React.FC = () => {
     recognition.onstart = () => { setIsListening(true); setUserMessage(''); setError(''); };
     recognition.onend = () => setIsListening(false);
     recognition.onerror = (event: any) => {
-        if (event.error !== 'no-speech') setError('音声の聞き取りに失敗しました。');
+        if (event.error !== 'no-speech') setError(texts[language].speechError);
         setIsListening(false);
     };
 
@@ -543,13 +569,13 @@ const App: React.FC = () => {
         }
 
         // 既存の履歴がない場合のみ、初期メッセージを送信
-        setChatHistory([{ role: 'model', text: '先生が考え中…', isLoading: true }]);
+        setChatHistory([{ role: 'model', text: texts[language].thinking, isLoading: true }]);
 
         const response = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-guest-id': guestId },
           body: JSON.stringify({
-            message: 'この問題について教えてください。',
+            message: texts[language].initialMessage,
             problem: problem.question,
             problemId: getProblemId(problem),
             chatHistory: [],
@@ -573,7 +599,7 @@ const App: React.FC = () => {
         }
     } catch(err) {
         console.error("Chat Start Error:", err);
-        setChatHistory([{ role: 'model', text: 'ごめんなさい、通信がうまくいかなかったようです。' }]);
+        setChatHistory([{ role: 'model', text: texts[language].communicationError }]);
         setHighlightKeywords([]);
     }
   }, [guestId]);
@@ -640,7 +666,7 @@ const App: React.FC = () => {
         )}
 
         {(isLoading || isRestoringSession) && (
-          <LoadingSpinner message={isRestoringSession ? '保存した会話を読み込んでいます…' : loadingMessage} />
+          <LoadingSpinner message={isRestoringSession ? texts[language].restoringSession : loadingMessage} />
         )}
 
         {appState === 'solving' && !isLoading && (
@@ -692,10 +718,10 @@ const App: React.FC = () => {
                         </div>
                         <div className="mt-auto pt-4 border-t">
                             {showSimilarProblemButton && (
-                                <button onClick={generateSimilarProblem} className="w-full mb-3 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full transition-colors">似た問題にチャレンジ！</button>
+                                <button onClick={generateSimilarProblem} className="w-full mb-3 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full transition-colors">{texts[language].similarProblemButton}</button>
                             )}
                             <div className="flex items-center gap-2">
-                                <textarea value={userMessage} onChange={(e) => setUserMessage(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } }} placeholder="先生へのメッセージ" className="flex-grow p-3 border-2 border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400" rows={2} disabled={isLoading || isSendingMessage} />
+                                <textarea value={userMessage} onChange={(e) => setUserMessage(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } }} placeholder={texts[language].messagePlaceholder} className="flex-grow p-3 border-2 border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400" rows={2} disabled={isLoading || isSendingMessage} />
                                 <button onClick={handleToggleListening} disabled={isLoading || isCorrecting || isSendingMessage} className={`p-3 rounded-full transition-colors ${isListening ? 'bg-red-200' : 'bg-stone-200 hover:bg-stone-300'}`}>
                                     {isCorrecting ? <CorrectionSpinner /> : (isListening ? <RecordingIcon /> : <MicIcon />)}
                                 </button>
@@ -704,8 +730,8 @@ const App: React.FC = () => {
                                 </button>
                             </div>
                              <div className="flex justify-between mt-3">
-                                 <button onClick={selectDifferentProblem} className="bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold py-2 px-4 rounded-full transition-colors">← 別の問題を選ぶ</button>
-                                 <button onClick={resetState} className="bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold py-2 px-4 rounded-full transition-colors">はじめからやり直す →</button>
+                                 <button onClick={selectDifferentProblem} className="bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold py-2 px-4 rounded-full transition-colors">{texts[language].selectDifferentProblem}</button>
+                                 <button onClick={resetState} className="bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold py-2 px-4 rounded-full transition-colors">{texts[language].resetRight}</button>
                              </div>
                         </div>
                     </div>
