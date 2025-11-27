@@ -179,6 +179,17 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    // Load language from localStorage
+    const saved = localStorage.getItem("lang");
+    if (saved) setLanguage(saved as 'ja' | 'en');
+  }, []);
+
+  useEffect(() => {
+    // Save language to localStorage
+    localStorage.setItem("lang", language);
+  }, [language]);
+
+  useEffect(() => {
     // セッション復元は初期ロード時のみ実行（guestId が設定された時のみ）
     if (!guestId || !browserSupabase || selectedProblem || hasRestoredSessionRef.current) return;
     let isMounted = true;
