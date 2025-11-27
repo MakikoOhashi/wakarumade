@@ -105,7 +105,7 @@ Based on the student's message and the problem text, respond with a **JSON objec
   "highlight": ["string", ...]
 }
 \`\`\`
-- teacher: What you, the teacher, say next. Keep it gentle, short, and in English.
+- teacher: What you, the teacher, say next. Keep it gentle, short, and in English. Respond entirely in English, regardless of the language of the problem text or student's message.
 - hint: A short hint sentence if needed. If no hint is needed, provide an empty string "".
 - highlight: An array of key words or numbers from the problem text that the student should focus on. If nothing should be highlighted, provide an empty array [].
 
