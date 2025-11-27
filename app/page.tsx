@@ -454,7 +454,8 @@ const App: React.FC = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             question: selectedProblem.question,
-            summary: logData?.summary
+            summary: logData?.summary,
+            language
           }),
         });
 
