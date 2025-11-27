@@ -182,9 +182,6 @@ We welcome contributions to improve WAKARUMADE! Please feel free to:
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🌟 Demo
-
-View the live demo: [AI Studio App](https://ai.studio/apps/drive/1sQ1giErLE85ZK0dJuV59MDy2pFeVNS8j)
 
 ## 📞 Support
 

@@ -1,6 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
 import { NextRequest, NextResponse } from 'next/server';
-import { TEACHER_PROMPT } from '../../../prompts';
+import { TEACHER_PROMPT, SUMMARY_PROMPT } from '../../../prompts';
 import { createClient } from '@supabase/supabase-js';
 
 export async function POST(request: NextRequest) {
@@ -126,6 +126,38 @@ export async function POST(request: NextRequest) {
     // Update chat history
     const updatedHistory = [...fullHistory, { role: 'assistant', content: result.teacher, timestamp: new Date().toISOString() }];
 
+    // Generate summary using AI
+    let summaryText = '';
+    try {
+      const summaryChat = ai.chats.create({
+        model: 'gemini-2.5-flash',
+        config: { systemInstruction: SUMMARY_PROMPT },
+      });
+
+      const conversationText = updatedHistory
+        .filter((entry: any) => entry.role === 'user' || entry.role === 'assistant')
+        .map((entry: any) => `${entry.role === 'user' ? '生徒' : '先生'}: ${entry.content}`)
+        .join('\n');
+
+      const summaryPrompt = `問題文: ${problem}\n\n会話履歴:\n${conversationText}`;
+
+      const summaryResponse = await summaryChat.sendMessage({ message: summaryPrompt });
+      if (summaryResponse.text) {
+        const summaryJsonMatch = summaryResponse.text.match(/```(json)?\s*([\s\S]*?)\s*```/);
+        if (summaryJsonMatch) {
+          const summaryData = JSON.parse(summaryJsonMatch[2]);
+          summaryText = `間違いの原因: ${summaryData.mistake_reason}\n強化すべきポイント: ${summaryData.strengthen_point}`;
+        } else {
+          summaryText = `Chat session for problem: ${problem?.substring(0, 100) ?? 'N/A'}...`;
+        }
+      } else {
+        summaryText = `Chat session for problem: ${problem?.substring(0, 100) ?? 'N/A'}...`;
+      }
+    } catch (e) {
+      console.error('Summary generation error:', e);
+      summaryText = `Chat session for problem: ${problem?.substring(0, 100) ?? 'N/A'}...`;
+    }
+
     // Save to database
     const { error } = await supabase
       .from('guest_chat_logs')
@@ -133,7 +165,7 @@ export async function POST(request: NextRequest) {
         guest_id: guestId,
         problem_id: effectiveProblemId,
         log: updatedHistory,
-        summary: `Chat session for problem: ${problem?.substring(0, 100) ?? 'N/A'}...`
+        summary: summaryText
       }, {
         onConflict: 'guest_id,problem_id'
       });

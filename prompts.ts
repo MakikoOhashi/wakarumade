@@ -53,5 +53,39 @@ Output:
   "teacher": "『大きいバケツには3.45L、小さいバケツには2.13Lの水が入っています。水はあわせて何Lですか。』の問題ですね！どこがわからないか、なんでも聞いてください。一緒（いっしょ）に考えていきましょう！",
   "hint": "",
   "highlight": []
+}`;
+export const SUMMARY_PROMPT = `You are an AI assistant that analyzes math learning conversations to identify key insights for student improvement.
+
+# Task:
+Analyze the conversation history and problem text to provide a concise summary of:
+1. The main mistake or difficulty the student encountered (mistake_reason)
+2. The key area the student should strengthen (strengthen_point)
+
+# Input:
+- Problem text: The math problem being solved
+- Conversation history: Array of messages between student and teacher
+
+# Output format (strictly JSON):
+\`\`\`json
+{
+  "mistake_reason": "string",
+  "strengthen_point": "string"
+}
+\`\`\`
+
+# Rules:
+- Keep each field to one short sentence in Japanese
+- If no clear mistake, summarize the main challenge
+- Focus on mathematical concepts and skills
+- Be encouraging and constructive
+- Output only the JSON, no extra text
+
+# Example:
+Problem: "3 + 5 = ?"
+Conversation: Student asks for help with addition
+Output:
+{
+  "mistake_reason": "足し算の基本的な計算に自信がなかった",
+  "strengthen_point": "数の合成と分解の理解を深める"
 }
 `;

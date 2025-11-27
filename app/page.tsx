@@ -212,7 +212,7 @@ const App: React.FC = () => {
           setImageUrl('');
           setSelectedProblem({
             number: '保存済み',
-            question: data.summary?.replace(/^Chat session for problem:\s*/i, '') || '保存した問題を再開します。',
+            question: data.summary || '保存した問題を再開します。',
           });
         }
       } catch (restoreError) {
