@@ -231,7 +231,7 @@ const App: React.FC = () => {
       try {
         const { data, error } = await browserSupabase
           .from('guest_chat_logs')
-          .select('log, summary')
+          .select('log, summary, problem_id')
           .eq('guest_id', guestId)
           .order('created_at', { ascending: false })
           .limit(1)
@@ -245,20 +245,23 @@ const App: React.FC = () => {
         }
 
         if (data?.log?.length) {
-          const restoredHistory = data.log.map((entry: any) => ({
-            role: entry.role === 'user' ? 'user' : 'model',
-            text: entry.content,
-            isLoading: false,
-          }));
+           const restoredHistory = data.log.map((entry: any) => ({
+             role: entry.role === 'user' ? 'user' : 'model',
+             text: entry.content,
+             isLoading: false,
+           }));
 
-          setChatHistory(restoredHistory);
-          setAppState('solving');
-          setImageUrl('');
-          setSelectedProblem({
-            number: '保存済み',
-            question: data.summary || texts[language].savedProblem,
-          });
-        }
+           setChatHistory(restoredHistory);
+           setAppState('solving');
+           setImageUrl('');
+           const problemIdParts = data.problem_id?.split('::') || [];
+           const number = problemIdParts[0] || '保存済み';
+           const question = problemIdParts[1] || data.summary || texts[language].savedProblem;
+           setSelectedProblem({
+             number,
+             question,
+           });
+         }
       } catch (restoreError) {
         if (isMounted) {
           console.error('Unexpected error restoring session:', restoreError);
