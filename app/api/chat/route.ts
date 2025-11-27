@@ -1,6 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
 import { NextRequest, NextResponse } from 'next/server';
-import { TEACHER_PROMPT, SUMMARY_PROMPT } from '../../../prompts';
+import { TEACHER_PROMPT, TEACHER_PROMPT_EN, SUMMARY_PROMPT } from '../../../prompts';
 import { createClient } from '@supabase/supabase-js';
 
 export async function POST(request: NextRequest) {
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
       }
     );
 
-    const { message, problem, problemId, chatHistory } = await request.json();
+    const { message, problem, problemId, chatHistory, language } = await request.json();
     const effectiveProblemId = problemId ?? problem ?? 'unknown-problem';
 
     // Load existing chat history from database
@@ -83,9 +83,10 @@ export async function POST(request: NextRequest) {
       }));
 
     // Create chat session with history
+    const prompt = language === 'en' ? TEACHER_PROMPT_EN : TEACHER_PROMPT;
     const chat = ai.chats.create({
       model: 'gemini-2.5-flash',
-      config: { systemInstruction: `${TEACHER_PROMPT}\n\n# Problem Text:\n${problem}` },
+      config: { systemInstruction: `${prompt}\n\n# Problem Text:\n${problem}` },
       history: conversationHistory,
     });
 

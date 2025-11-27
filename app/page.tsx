@@ -379,6 +379,7 @@ const App: React.FC = () => {
             problem: selectedProblem?.question,
             problemId: selectedProblem ? getProblemId(selectedProblem) : undefined,
             chatHistory,
+            language,
           }),
         });
 
@@ -579,6 +580,7 @@ const App: React.FC = () => {
             problem: problem.question,
             problemId: getProblemId(problem),
             chatHistory: [],
+            language,
           }),
         });
 
