@@ -677,7 +677,7 @@ const App: React.FC = () => {
               <div className="md:w-3/5 flex items-center justify-center">
                   {selectedProblem?.number === '類題' || !imageUrl ? (
                       <div className="text-4xl font-bold text-center text-stone-800 p-4">
-                          {selectedProblem?.question ?? ''}
+                          {selectedProblem ? getProblemId(selectedProblem).split('::')[1] : ''}
                       </div>
                   ) : (
                       imageUrl && <img src={imageUrl} alt="Uploaded worksheet" className="w-full h-auto object-contain rounded-lg max-h-[80vh]" />
