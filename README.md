@@ -2,9 +2,11 @@
 <img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
 
-# WAKARUMADE (わかるまで) - AI-Powered Math Learning Assistant
+# 🌍 WAKARUMADE - AI-Powered English Math Word Problems Learning Assistant for Grades 1–3 / Ages 6–9
 
-**WAKARUMADE** is an intelligent math learning application designed to help elementary school students understand math problems through AI-powered guidance. The app combines OCR technology, conversational AI, voice input, and local data persistence to create an engaging learning experience.
+### Math Word Problems for Kids / 算数文章題アプリ
+
+**WAKARUMADE** is an intelligent math learning application designed to help Grades 1-3 students (Ages 6-9) master English math word problems through AI-powered guidance. The app combines OCR technology, conversational AI, voice input, and local data persistence to create an engaging learning experience.
 
 [![Demo](https://img.shields.io/badge/Demo-View_in_AI_Studio-blue)](https://ai.studio/apps/drive/1sQ1giErLE85ZK0dJuV59MDy2pFeVNS8j)
 [![Next.js](https://img.shields.io/badge/Next.js-14.0.0-black)](https://nextjs.org/)
@@ -21,8 +23,8 @@
 - Automatic problem number detection
 
 ### 🤖 **AI Math Teacher**
-- Conversational guidance tailored for elementary students
-- Step-by-step explanations in Japanese
+- Conversational guidance tailored for Grades 1-3 students
+- Step-by-step explanations in English for math word problems
 - Contextual hints when students are stuck
 - Visual highlighting of key problem elements
 - Encouraging and supportive teaching approach
@@ -30,7 +32,7 @@
 ### 🎤 **Voice Input Support**
 - Voice-to-text functionality with speech recognition
 - Automatic speech correction for math terminology
-- Japanese language optimization for educational content
+- English language optimization for educational content
 - Real-time transcription feedback
 
 ### 🔄 **Adaptive Learning**
@@ -145,30 +147,30 @@
 ## 📱 How to Use
 
 1. **Upload a Problem Photo**
-   - Click "写真をとる" (Take Photo) button
-   - Upload or take a photo of a math worksheet
-   - The AI will automatically extract problem text
+    - Click "Take a Photo" button
+    - Upload or take a photo of an English math word problems worksheet
+    - The AI will automatically extract problem text
 
 2. **Select a Problem**
-   - Browse detected problems
-   - Click on any problem to start learning
+    - Browse detected problems
+    - Click on any problem to start learning
 
 3. **Interact with AI Teacher**
-   - Ask questions in natural language
-   - Use voice input for spoken questions (microphone button)
-   - Receive step-by-step guidance and hints
-   - Messages are cleared immediately upon sending to prevent duplicate submissions
-   - Conversation history is automatically saved and restored
+    - Ask questions in natural English
+    - Use voice input for spoken questions (microphone button)
+    - Receive step-by-step guidance and hints in English
+    - Messages are cleared immediately upon sending to prevent duplicate submissions
+    - Conversation history is automatically saved and restored
 
 4. **Generate Similar Problems**
-   - When you solve a problem correctly
-   - Click "似た問題にチャレンジ！" to get practice problems
+    - When you solve a problem correctly
+    - Click "Try a similar problem!" to get practice problems
 
 5. **Session Management**
-   - Your conversation history is automatically saved
-   - Sessions are restored when you return to the app
-   - Switch between different problems while maintaining separate conversation histories
-   - Reset to start fresh with "はじめからやり直す" button
+    - Your conversation history is automatically saved
+    - Sessions are restored when you return to the app
+    - Switch between different problems while maintaining separate conversation histories
+    - Reset to start fresh with "Start over" button
 
 ## 🤝 Contributing
 
@@ -189,4 +191,4 @@ For support or questions, please open an issue in this repository.
 
 ---
 
-**WAKARUMADE** - Making math learning accessible and enjoyable for every student! 🎓
+**WAKARUMADE** - Making English math word problems learning accessible and enjoyable for Grades 1-3 students! 🌍🎓
