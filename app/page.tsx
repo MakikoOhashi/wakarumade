@@ -374,7 +374,7 @@ const App: React.FC = () => {
   }, [userMessage, selectedProblem, chatHistory, guestId, isSendingMessage]);
 
   const generateSimilarProblem = useCallback(async () => {
-    if (!selectedProblem) return;
+    if (!selectedProblem || !guestId || !browserSupabase) return;
 
     setIsLoading(true);
     setLoadingMessage('類題を作成中…');
@@ -383,11 +383,29 @@ const App: React.FC = () => {
     setHighlightKeywords([]);
 
     try {
+        // Get summary from database
+        const problemId = getProblemId(selectedProblem);
+        const { data: logData, error: fetchError } = await browserSupabase
+          .from('guest_chat_logs')
+          .select('summary')
+          .eq('guest_id', guestId)
+          .eq('problem_id', problemId)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (fetchError) {
+          console.error('Failed to fetch summary:', fetchError);
+        }
+
         // Call API route for similar problem
         const response = await fetch('/api/similar', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ question: selectedProblem.question }),
+          body: JSON.stringify({
+            question: selectedProblem.question,
+            summary: logData?.summary
+          }),
         });
 
         if (!response.ok) {
