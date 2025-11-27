@@ -43,6 +43,8 @@
 - Supabase PostgreSQL database for storing chat sessions
 - Guest user support with UUID-based identification
 - Persistent conversation history across browser sessions
+- Automatic session restoration on page reload
+- Problem-based conversation history management
 - Real-time data synchronization
 
 ### 🎨 **Modern UI/UX**
@@ -50,12 +52,16 @@
 - Mobile-responsive layout
 - Intuitive problem selection interface
 - Real-time chat experience
+- Instant message clearing on send (prevents duplicate submissions)
+- Loading states and visual feedback
+- Keyboard shortcuts (Enter to send, Shift+Enter for new line)
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 - **Node.js** (v20.11.0 or later recommended)
 - **Gemini API Key** (From [Google AI Studio](https://aistudio.google.com/app/apikey))
+- **Supabase Account** (For data persistence - [Sign up here](https://supabase.com))
 
 ### Installation
 
@@ -70,7 +76,21 @@
     npm install
     ```
 
-3. **Configure environment variables**
+3. **Set up Supabase database**
+    Create a table `guest_chat_logs` in your Supabase project with the following schema:
+    ```sql
+    CREATE TABLE guest_chat_logs (
+      guest_id TEXT NOT NULL,
+      problem_id TEXT NOT NULL,
+      log JSONB NOT NULL,
+      summary TEXT,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+      PRIMARY KEY (guest_id, problem_id)
+    );
+    ```
+
+4. **Configure environment variables**
     Create a `.env.local` file in the root directory:
     ```env
     GEMINI_API_KEY=your_gemini_api_key_here
@@ -78,12 +98,12 @@
     NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
     ```
 
-4. **Start development server**
+5. **Start development server**
     ```bash
     npm run dev
     ```
 
-5. **Open your browser**
+6. **Open your browser**
     Navigate to `http://localhost:3000`
 
 ## 🏗️ Project Structure
@@ -92,13 +112,16 @@
 ├── app/
 │   ├── api/                # Next.js API routes
 │   │   ├── chat/           # Chat API with Supabase data persistence
-│   │   ├── correct/        # Answer correction API
+│   │   ├── correct/        # Speech correction API
 │   │   ├── hint/           # Hint generation API
 │   │   ├── ocr/            # OCR processing API
 │   │   └── similar/        # Similar problem generation API
 │   ├── globals.css         # Global styles
 │   ├── layout.tsx          # Root layout component
-│   └── page.tsx            # Main page component
+│   └── page.tsx            # Main page component (chat UI, session management)
+├── prisma/                 # Prisma schema and migrations
+│   ├── schema.prisma       # Database schema
+│   └── migrations/         # Database migration files
 ├── public/                 # Static assets
 ├── prompts.ts              # AI teacher prompts and configurations
 ├── package.json            # Dependencies and scripts
@@ -111,11 +134,13 @@
 ## 🔧 Technologies Used
 
 - **Framework**: Next.js 14.0.0 + React 18.0.0 + TypeScript
-- **Database**: Supabase (PostgreSQL)
+- **Database**: Supabase (PostgreSQL) for cloud persistence
+- **ORM**: Prisma (for local development)
 - **AI Integration**: Google Gemini 2.5 Flash
 - **Styling**: TailwindCSS
 - **Voice Recognition**: Web Speech API
 - **OCR**: Google Generative AI Vision
+- **Image Processing**: HEIC to JPEG conversion support
 
 ## 📱 How to Use
 
@@ -130,12 +155,20 @@
 
 3. **Interact with AI Teacher**
    - Ask questions in natural language
-   - Use voice input for spoken questions
+   - Use voice input for spoken questions (microphone button)
    - Receive step-by-step guidance and hints
+   - Messages are cleared immediately upon sending to prevent duplicate submissions
+   - Conversation history is automatically saved and restored
 
 4. **Generate Similar Problems**
    - When you solve a problem correctly
    - Click "似た問題にチャレンジ！" to get practice problems
+
+5. **Session Management**
+   - Your conversation history is automatically saved
+   - Sessions are restored when you return to the app
+   - Switch between different problems while maintaining separate conversation histories
+   - Reset to start fresh with "はじめからやり直す" button
 
 ## 🤝 Contributing
 
