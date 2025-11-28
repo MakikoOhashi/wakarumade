@@ -697,7 +697,7 @@ const App: React.FC = () => {
             <div className="w-full h-full flex flex-col md:flex-row gap-6">
 
               <div className="md:w-3/5 flex items-center justify-center">
-                  {selectedProblem?.number === '類題' || !imageUrl ? (
+                  {selectedProblem?.number === (language === 'en' ? 'Similar' : '類題') || !imageUrl ? (
                       <div className="text-4xl font-bold text-center text-stone-800 p-4">
                           {selectedProblem ? getProblemId(selectedProblem).split('::')[1] : ''}
                       </div>
