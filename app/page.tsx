@@ -464,7 +464,7 @@ const App: React.FC = () => {
         }
 
         const result = await response.json();
-        const newProblem: Problem = { number: '類題', question: result.question };
+        const newProblem: Problem = { number: language === 'en' ? 'Similar' : '類題', question: result.question };
 
         // 類題を ocrResults に追加して、問題選択画面に表示されるようにする
         setOcrResults(prev => {
