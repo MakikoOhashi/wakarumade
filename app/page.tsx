@@ -706,7 +706,7 @@ const App: React.FC = () => {
                   )}
               </div>
 
-              <div className="md:w-2/5 flex flex-col flex-1 md:h-full md:max-h-[90vh] pb-8">
+              <div className="md:w-2/5 flex flex-col flex-2 md:h-full md:max-h-[90vh] pb-8">
                   {!selectedProblem && ocrResults.length > 0 && (
                       <div className="flex flex-col h-full">
                           <h2 className="text-2xl font-bold mb-4 text-stone-800">{texts[language].selectProblem}</h2>
