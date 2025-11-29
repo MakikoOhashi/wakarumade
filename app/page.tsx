@@ -694,7 +694,7 @@ const App: React.FC = () => {
         )}
 
         {appState === 'solving' && !isLoading && (
-            <div className="w-full h-full flex flex-col md:flex-row">
+            <div className="w-full h-full flex flex-col md:flex-row md:gap-2">
 
               <div className="md:w-3/5 flex items-center justify-start flex-1 md:h-auto">
                   {selectedProblem?.number === (language === 'en' ? 'Similar' : '類題') || !imageUrl ? (
