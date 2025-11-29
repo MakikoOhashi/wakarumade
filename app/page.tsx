@@ -696,13 +696,13 @@ const App: React.FC = () => {
         {appState === 'solving' && !isLoading && (
             <div className="w-full h-full flex flex-col md:flex-row">
 
-              <div className="md:w-3/5 flex items-center justify-center flex-1 md:h-auto">
+              <div className="md:w-3/5 flex items-center justify-start flex-1 md:h-auto">
                   {selectedProblem?.number === (language === 'en' ? 'Similar' : '類題') || !imageUrl ? (
                       <div className="text-4xl font-bold text-center text-stone-800 p-4">
                           {selectedProblem ? getProblemId(selectedProblem).split('::')[1] : ''}
                       </div>
                   ) : (
-                      imageUrl && <img src={imageUrl} alt="Uploaded worksheet" className="w-full h-auto object-contain rounded-lg" />
+                      imageUrl && <img src={imageUrl} alt="Uploaded worksheet" className="w-auto h-auto object-contain rounded-lg max-w-full" />
                   )}
               </div>
 
