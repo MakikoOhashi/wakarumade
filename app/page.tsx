@@ -706,11 +706,11 @@ const App: React.FC = () => {
                   )}
               </div>
 
-              <div className="md:w-2/5 flex flex-col flex-1 md:h-full pb-8">
+              <div className="md:w-2/5 flex flex-col flex-1 md:h-full md:max-h-[90vh] pb-8">
                   {!selectedProblem && ocrResults.length > 0 && (
                       <div className="flex flex-col h-full">
                           <h2 className="text-2xl font-bold mb-4 text-stone-800">{texts[language].selectProblem}</h2>
-                          <div className="overflow-y-auto" style={{maxHeight: 'calc(50% - 7rem)'}}>
+                          <div className="overflow-y-auto max-h-[calc(50%-7rem)] md:max-h-none md:flex-grow">
                               <ul className="space-y-3">
                                   {ocrResults.map((problem, index) => (
                                       <li key={index} onClick={() => startChat(problem)} className="p-4 bg-stone-50 hover:bg-orange-100 rounded-lg cursor-pointer transition-colors border border-stone-200">
