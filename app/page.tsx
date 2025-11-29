@@ -708,7 +708,7 @@ const App: React.FC = () => {
 
               <div className="md:w-2/5 flex flex-col h-full pb-8">
                   {!selectedProblem && ocrResults.length > 0 && (
-                      <div className="flex flex-col h-full">
+                      <div className="flex flex-col h-full max-h-[90vh]">
                           <h2 className="text-2xl font-bold mb-4 text-stone-800">{texts[language].selectProblem}</h2>
                           <div className="overflow-y-auto flex-grow">
                               <ul className="space-y-3">
