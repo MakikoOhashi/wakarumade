@@ -696,21 +696,21 @@ const App: React.FC = () => {
         {appState === 'solving' && !isLoading && (
             <div className="w-full h-full flex flex-col md:flex-row gap-6">
 
-              <div className="md:w-3/5 flex items-center justify-center">
+              <div className="md:w-3/5 flex items-center justify-center h-[50vh] md:h-auto">
                   {selectedProblem?.number === (language === 'en' ? 'Similar' : '類題') || !imageUrl ? (
                       <div className="text-4xl font-bold text-center text-stone-800 p-4">
                           {selectedProblem ? getProblemId(selectedProblem).split('::')[1] : ''}
                       </div>
                   ) : (
-                      imageUrl && <img src={imageUrl} alt="Uploaded worksheet" className="w-full h-auto object-contain rounded-lg max-h-[80vh]" />
+                      imageUrl && <img src={imageUrl} alt="Uploaded worksheet" className="w-full h-auto object-contain rounded-lg" />
                   )}
               </div>
 
-              <div className="md:w-2/5 flex flex-col h-full pb-8">
+              <div className="md:w-2/5 flex flex-col h-[50vh] md:h-full pb-8">
                   {!selectedProblem && ocrResults.length > 0 && (
-                      <div className="flex flex-col h-full max-h-[90vh]">
+                      <div className="flex flex-col h-full">
                           <h2 className="text-2xl font-bold mb-4 text-stone-800">{texts[language].selectProblem}</h2>
-                          <div className="overflow-y-auto flex-grow">
+                          <div className="overflow-y-auto" style={{maxHeight: '50vh'}}>
                               <ul className="space-y-3">
                                   {ocrResults.map((problem, index) => (
                                       <li key={index} onClick={() => startChat(problem)} className="p-4 bg-stone-50 hover:bg-orange-100 rounded-lg cursor-pointer transition-colors border border-stone-200">
