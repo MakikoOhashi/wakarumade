@@ -134,6 +134,7 @@ const App: React.FC = () => {
       initialMessage: 'この問題について教えてください。',
       similarProblemButton: '似た問題にチャレンジ！',
       savedProblem: '保存した問題を再開します。',
+      personalizedMessage: '🌟 すごいね、ここまでよく考えたね！\n\nつぎのもんだいでは\n「どの計算かな？」を見つけるのがポイントだよ✨\n\n類題でもっと得意になろう！',
     },
     en: {
       title: 'Until You Understand/WAKARUMADE',
@@ -160,6 +161,7 @@ const App: React.FC = () => {
       initialMessage: 'Please teach me about this problem.',
       similarProblemButton: 'Try a similar problem!',
       savedProblem: 'Resume saved problem.',
+      personalizedMessage: '🌟 Great job! You thought really hard!\n\nFor the next problem,\nfind out "which calculation?" is the key! ✨\n\nLet\'s become even better with similar problems!',
     }
   };
 
@@ -420,7 +422,7 @@ const App: React.FC = () => {
 
             if (!fetchError && logData?.summary) {
               // summaryをもとにしたパーソナライズメッセージを設定
-              setPersonalizedMessage('🌟 すごいね、ここまでよく考えたね！\n\nつぎのもんだいでは\n「どの計算かな？」を見つけるのがポイントだよ✨\n\n類題でもっと得意になろう！');
+              setPersonalizedMessage(texts[language].personalizedMessage || '🌟 すごいね、ここまでよく考えたね！\n\nつぎのもんだいでは\n「どの計算かな？」を見つけるのがポイントだよ✨\n\n類題でもっと得意になろう！');
             }
           }
           setShowSimilarProblemButton(true);
@@ -759,7 +761,7 @@ const App: React.FC = () => {
                             <div ref={chatBottomRef} />
                         </div>
                         <div className="mt-auto pt-4 border-t">
-                            {personalizedMessage && (
+                            {showSimilarProblemButton && personalizedMessage && (
                                 <div className="w-full mb-3 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-lg">
                                     <p className="whitespace-pre-wrap">{personalizedMessage}</p>
                                 </div>
