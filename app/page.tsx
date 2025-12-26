@@ -182,6 +182,7 @@ const App: React.FC = () => {
   const [language, setLanguage] = useState<'ja' | 'en'>('ja');
   const [guestId, setGuestId] = useState<string>('');
   const [isRestoringSession, setIsRestoringSession] = useState<boolean>(false);
+  const [personalizedMessage, setPersonalizedMessage] = useState<string | null>(null);
 
   // --- Refs ---
   const chatBottomRef = useRef<HTMLDivElement>(null);
@@ -405,6 +406,23 @@ const App: React.FC = () => {
         }
 
         if (result.teacher.includes('正解') || result.teacher.includes('せいかい') || result.teacher.includes('Correct!') || result.teacher.includes('correct!') || result.teacher.includes('right!')) {
+          // summaryを取得してパーソナライズメッセージを設定
+          if (selectedProblem && guestId && browserSupabase) {
+            const problemId = getProblemId(selectedProblem);
+            const { data: logData, error: fetchError } = await browserSupabase
+              .from('guest_chat_logs')
+              .select('summary')
+              .eq('guest_id', guestId)
+              .eq('problem_id', problemId)
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .maybeSingle();
+
+            if (!fetchError && logData?.summary) {
+              // summaryをもとにしたパーソナライズメッセージを設定
+              setPersonalizedMessage('🌟 すごいね、ここまでよく考えたね！\n\nつぎのもんだいでは\n「どの計算かな？」を見つけるのがポイントだよ✨\n\n類題でもっと得意になろう！');
+            }
+          }
           setShowSimilarProblemButton(true);
         }
     } catch(err) {
@@ -696,21 +714,21 @@ const App: React.FC = () => {
         {appState === 'solving' && !isLoading && (
             <div className="w-full h-full flex flex-col md:flex-row md:gap-2">
 
-              <div className="md:w-3/5 flex items-center justify-start flex-1 md:h-auto">
+              <div className="md:w-3/5 flex items-center justify-start flex-1 md:h-auto h-[33vh] md:h-auto">
                   {selectedProblem?.number === (language === 'en' ? 'Similar' : '類題') || !imageUrl ? (
                       <div className="text-4xl font-bold text-center text-stone-800 p-4">
                           {selectedProblem ? getProblemId(selectedProblem).split('::')[1] : ''}
                       </div>
                   ) : (
-                      imageUrl && <img src={imageUrl} alt="Uploaded worksheet" className="w-auto h-auto object-contain rounded-lg max-w-full" />
+                      imageUrl && <img src={imageUrl} alt="Uploaded worksheet" className="w-auto h-auto object-contain rounded-lg max-w-full max-h-[33vh]" />
                   )}
               </div>
 
-              <div className="md:w-2/5 flex flex-col flex-2 md:h-full md:max-h-[90vh] pb-8">
+              <div className="md:w-2/5 flex flex-col flex-2 md:h-full md:max-h-[90vh] h-[67vh] pb-8">
                   {!selectedProblem && ocrResults.length > 0 && (
                       <div className="flex flex-col h-full">
                           <h2 className="text-2xl font-bold mb-4 text-stone-800">{texts[language].selectProblem}</h2>
-                          <div className="overflow-y-auto max-h-[calc(50%-7rem)] md:max-h-none md:flex-grow">
+                          <div className="overflow-y-auto max-h-[67vh] md:max-h-none md:flex-grow">
                               <ul className="space-y-3">
                                   {ocrResults.map((problem, index) => (
                                       <li key={index} onClick={() => startChat(problem)} className="p-4 bg-stone-50 hover:bg-orange-100 rounded-lg cursor-pointer transition-colors border border-stone-200">
@@ -741,6 +759,11 @@ const App: React.FC = () => {
                             <div ref={chatBottomRef} />
                         </div>
                         <div className="mt-auto pt-4 border-t">
+                            {personalizedMessage && (
+                                <div className="w-full mb-3 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-lg">
+                                    <p className="whitespace-pre-wrap">{personalizedMessage}</p>
+                                </div>
+                            )}
                             {showSimilarProblemButton && (
                                 <button onClick={generateSimilarProblem} className="w-full mb-3 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full transition-colors">{texts[language].similarProblemButton}</button>
                             )}
