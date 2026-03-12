@@ -1,240 +1,135 @@
-<div align="center">
-</div>
+# WAKARUMADE
 
-# 🌍 WAKARUMADE - AI-Powered Math Word Problems Learning Assistant for Grades 1–3 / Ages 6–9 (English & Japanese)
+WAKARUMADE is a bilingual web app that helps Grades 1-3 learners work through math word problems step by step. A child can upload a worksheet photo, let the app extract each problem with OCR, chat with an AI teacher for guided support, and generate a similar follow-up problem for extra practice.
 
-### Math Word Problems for Kids / 算数文章題アプリ
+This repository is a strong code sample because it shows product thinking as well as implementation detail: OCR ingestion, structured AI responses, session persistence, and a conversational interface built for a real learner workflow.
 
-**WAKARUMADE** is an intelligent math learning application designed to help Grades 1-3 students (Ages 6-9) master math word problems in English and Japanese through AI-powered guidance. The app combines OCR technology, conversational AI, voice input, and local data persistence to create an engaging learning experience.
+## What It Solves
 
-[![Demo](https://img.shields.io/badge/Demo-View_in_AI_Studio-blue)](https://ai.studio/apps/drive/1sQ1giErLE85ZK0dJuV59MDy2pFeVNS8j)
-[![Next.js](https://img.shields.io/badge/Next.js-14.0.0-black)](https://nextjs.org/)
-[![React](https://img.shields.io/badge/React-18.0.0-blue)](https://reactjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.8.2-blue)](https://www.typescriptlang.org/)
-[![Supabase](https://img.shields.io/badge/Supabase-2.39.3-green)](https://supabase.com/)
-[![Prisma](https://img.shields.io/badge/Prisma-5.14.0-blue)](https://www.prisma.io/)
-[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.3.2-blue)](https://tailwindcss.com/)
-[![Google Gemini](https://img.shields.io/badge/Google_Gemini-2.5_Flash-yellow)](https://ai.google/products/gemini/)
+Many children struggle with math word problems not because they cannot calculate, but because they cannot map the story into the right operation. WAKARUMADE focuses on that reasoning gap by turning each worksheet problem into a guided conversation.
 
-## The problem it solves
+The current app supports:
 
-Parents and teachers struggle to help young learners understand math word problems.
-Most kids don't fail because of the arithmetic — they fail because they can't decode the *language structure* of the story.
+- OCR-based extraction of multiple problems from a worksheet image
+- Japanese and English learning flows
+- Chat-based AI guidance for each selected problem
+- Voice input with correction for spoken text
+- Similar problem generation after a learner completes a problem
+- Guest session persistence per problem using Supabase
+- Automatic restoration of the latest saved conversation
 
-This leads to:
-- Guessing instead of reasoning
-- Adults repeatedly explaining the same patterns
-- No clear data on *where* the child got stuck
+## Tech Stack
 
-Traditional worksheets and drill apps don't expose the child's reasoning path.
-They show answers, not understanding.
+- Next.js 15.5.7
+- React 19.2.1
+- TypeScript 5.8
+- Supabase JavaScript client 2.84.0
+- Google GenAI SDK 1.28.0
+- Prisma 5.22.0 (present in the repo for local schema/migration work)
+- Tailwind CSS 3.3
 
-## How this app helps (Current Capabilities)
+## Architecture Notes
 
-**Until You Understand/WAKARUMADE** breaks each word problem into small, guided steps so children understand *how* to think, not just what the answer is.
+- `app/page.tsx` coordinates the main learner flow and delegates UI sections to smaller components.
+- `app/api/ocr/route.ts` sends worksheet images to Gemini and requests structured JSON output.
+- `app/api/chat/route.ts` manages the tutoring conversation, keeps the exchange in Supabase, and generates a short learning summary.
+- `app/api/similar/route.ts` creates a new related problem from the original question and session summary.
+- `app/api/correct/route.ts` cleans up speech-to-text input for elementary math usage.
+- Supabase is the active persistence layer in the current tutoring flow; Prisma files remain in the repository but are not the primary runtime path for chat storage.
+- `components/app/` contains the main UI sections used by the page.
+- `lib/` contains reusable helpers and localized text resources.
+- `types/` contains shared application types.
 
-Current users can:
-- Follow a step-by-step scaffold tailored for early elementary level
-- See the problem decomposed logically, one decision at a time
-- Receive immediate feedback that nudges them back on track
-- Have new similar problems automatically generated based on what they struggled with
-- Benefit from backend logs that analyze **which step caused confusion**, and receive **new variants targeting the same reasoning gap**
+## Security Note
 
-This makes word problems:
-- Less intimidating
-- More predictable
-- More accessible to ESL families
-- Easier for parents/teachers to support without re-explaining everything
+`GEMINI_API_KEY` is intentionally read only from server-side environment variables. It should not be exposed through `next.config.js` or any `NEXT_PUBLIC_*` variable.
 
-## Future Directions (Not yet implemented)
+## Local Setup
 
-Planned enhancements:
-- A parent dashboard showing:
-  - what patterns the child has mastered
-  - where they repeatedly get stuck
-  - simple explanations of the child's reasoning weaknesses
-- Progress tracking for logged-in students
-- Personalized practice sets generated automatically from each child's error patterns
-- A library of problem types categorized by cognitive skill (comparison, combine, separate, equal groups, etc.)
+### Requirements
 
-## 🎯 Features
+- Node.js 20 or newer
+- A Google Gemini API key
+- A Supabase project with a `guest_chat_logs` table
 
-### 📸 **Photo-Based Problem Recognition**
-- Upload photos of math worksheets or textbook problems
-- AI-powered OCR extracts problem text using Google Gemini 2.5 Flash
-- Supports multiple formats including HEIC (iPhone photos)
-- Automatic problem number detection
+### Environment Variables
 
-### 🤖 **AI Math Teacher**
-- Conversational guidance tailored for Grades 1-3 students
-- Step-by-step explanations in English or Japanese for math word problems
-- Contextual hints when students are stuck
-- Visual highlighting of key problem elements
-- Encouraging and supportive teaching approach
+Create `.env.local` in the project root with:
 
-### 🎤 **Voice Input Support**
-- Voice-to-text functionality with speech recognition
-- Automatic speech correction for math terminology
-- Japanese language optimization for educational content
-- Real-time transcription feedback
-
-### 🔄 **Adaptive Learning**
-- Similar problem generation based on solved problems
-- Personalized learning paths
-- Progress tracking through conversation history
-- Smart hint system that responds to student needs
-
-### 💾 **Cloud Data Persistence**
-- Supabase PostgreSQL database for storing chat sessions
-- Guest user support with UUID-based identification
-- Persistent conversation history across browser sessions
-- Automatic session restoration on page reload
-- Problem-based conversation history management
-- Real-time data synchronization
-
-### 🎨 **Modern UI/UX**
-- Clean, child-friendly interface design
-- Mobile-responsive layout
-- Intuitive problem selection interface
-- Real-time chat experience
-- Instant message clearing on send (prevents duplicate submissions)
-- Loading states and visual feedback
-- Keyboard shortcuts (Enter to send, Shift+Enter for new line)
-
-## 🚀 Quick Start
-
-### Prerequisites
-- **Node.js** (v20.11.0 or later recommended)
-- **Gemini API Key** (From [Google AI Studio](https://aistudio.google.com/app/apikey))
-- **Supabase Account** (For data persistence - [Sign up here](https://supabase.com))
-
-### Installation
-
-1. **Clone the repository**
-    ```bash
-    git clone <repository-url>
-    cd wakarumade
-    ```
-
-2. **Install dependencies**
-    ```bash
-    npm install
-    ```
-
-3. **Set up Supabase database**
-    Create a table `guest_chat_logs` in your Supabase project with the following schema:
-    ```sql
-    CREATE TABLE guest_chat_logs (
-      guest_id TEXT NOT NULL,
-      problem_id TEXT NOT NULL,
-      log JSONB NOT NULL,
-      summary TEXT,
-      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-      updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-      PRIMARY KEY (guest_id, problem_id)
-    );
-    ```
-
-4. **Configure environment variables**
-    Create a `.env.local` file in the root directory:
-    ```env
-    GEMINI_API_KEY=your_gemini_api_key_here
-    NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-    ```
-
-5. **Start development server**
-    ```bash
-    npm run dev
-    ```
-
-6. **Open your browser**
-    Navigate to `http://localhost:3000`
-
-## 🏗️ Project Structure
-
-```
-├── app/
-│   ├── api/                # Next.js API routes
-│   │   ├── chat/           # Chat API with Supabase data persistence
-│   │   ├── correct/        # Speech correction API
-│   │   ├── hint/           # Hint generation API
-│   │   ├── ocr/            # OCR processing API
-│   │   └── similar/        # Similar problem generation API
-│   ├── globals.css         # Global styles
-│   ├── layout.tsx          # Root layout component
-│   └── page.tsx            # Main page component (chat UI, session management)
-├── prisma/                 # Prisma schema and migrations
-│   ├── schema.prisma       # Database schema
-│   └── migrations/         # Database migration files
-├── public/                 # Static assets
-├── prompts.ts              # AI teacher prompts and configurations
-├── package.json            # Dependencies and scripts
-├── tsconfig.json           # TypeScript configuration
-├── next.config.js          # Next.js configuration
-├── .env.local              # Environment variables (Supabase, Gemini API)
-└── README.md               # Project documentation
+```env
+GEMINI_API_KEY=your_gemini_api_key
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 ```
 
-## 🔧 Technologies Used
+The browser uses the `NEXT_PUBLIC_*` values for restoring guest sessions, and the server routes use `SUPABASE_URL` plus `SUPABASE_SERVICE_ROLE_KEY` to read and write tutoring logs safely.
 
-- **Framework**: Next.js 14.0.0 + React 18.0.0 + TypeScript
-- **Database**: Supabase (PostgreSQL) for cloud persistence
-- **ORM**: Prisma (for local development)
-- **AI Integration**: Google Gemini 2.5 Flash
-- **Styling**: TailwindCSS
-- **Voice Recognition**: Web Speech API
-- **OCR**: Google Generative AI Vision
-- **Image Processing**: HEIC to JPEG conversion support
+### Supabase Table
 
-## 📱 How to Use
+Create this table in Supabase:
 
-1. **Select Language**
-    - Choose between English or Japanese at the top of the page
+```sql
+CREATE TABLE guest_chat_logs (
+  guest_id TEXT NOT NULL,
+  problem_id TEXT NOT NULL,
+  log JSONB NOT NULL,
+  summary TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  PRIMARY KEY (guest_id, problem_id)
+);
+```
 
-2. **Upload a Problem Photo**
-    - Click "Take a Photo" button
-    - Upload or take a photo of a math word problems worksheet
-    - The AI will automatically extract problem text
+### Run Locally
 
-3. **Select a Problem**
-    - Browse detected problems
-    - Click on any problem to start learning
+```bash
+npm install
+npm run dev
+```
 
-4. **Interact with AI Teacher**
-    - Ask questions in natural language (English or Japanese based on selection)
-    - Use voice input for spoken questions (microphone button, optimized for Japanese)
-    - Receive step-by-step guidance and hints in the selected language
-    - Messages are cleared immediately upon sending to prevent duplicate submissions
-    - Conversation history is automatically saved and restored
+Then open [http://localhost:3000](http://localhost:3000).
 
-5. **Generate Similar Problems**
-    - When you solve a problem correctly
-    - Click "Try a similar problem!" to get practice problems
+## Repository Structure
 
-6. **Session Management**
-    - Your conversation history is automatically saved
-    - Sessions are restored when you return to the app
-    - Switch between different problems while maintaining separate conversation histories
-    - Reset to start fresh with "Start over" button
+```text
+app/
+  api/
+    chat/
+    correct/
+    hint/
+    ocr/
+    parse/
+    similar/
+  globals.css
+  layout.tsx
+  page.tsx
+components/
+  app/
+lib/
+prisma/
+public/
+types/
+prompts.ts
+next.config.js
+package.json
+```
 
-## 🤝 Contributing
+## Current Scope vs Future Work
 
-We welcome contributions to improve WAKARUMADE! Please feel free to:
-- Report bugs or issues
-- Suggest new features
-- Submit pull requests
-- Improve documentation
+Implemented now:
 
-## 📄 License
+- OCR ingestion from worksheet photos
+- AI tutoring chat per problem
+- Similar problem generation
+- Voice input correction
+- Guest conversation persistence and restoration
+- Bilingual UI copy
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Possible next improvements:
 
-
-## 📞 Support
-
-For support or questions, please open an issue in this repository.
-
----
-
-**WAKARUMADE** - Making math word problems learning accessible and enjoyable for Grades 1-3 students in English and Japanese! 🌍🎓
+- Parent or teacher dashboard for reviewing struggle patterns
+- Stronger analytics around repeated misconception types
+- Better learner profiles beyond guest sessions
+- More deliberate test coverage around API routes and flow state
