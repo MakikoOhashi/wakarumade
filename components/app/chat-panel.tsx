@@ -1,28 +1,22 @@
 import type { Ref } from 'react';
-import Image from 'next/image';
 
 import { CorrectionSpinner, MicIcon, RecordingIcon } from '@/components/app/chat-controls';
-import { HighlightedText } from '@/components/app/highlighted-text';
 import { LoadingSpinner } from '@/components/app/loading-spinner';
-import type { ChatMessage, Language, LocalizedTextSet, Problem } from '@/types/app';
+import type { ChatMessage, LocalizedTextSet } from '@/types/app';
 
 type ChatPanelProps = {
   chatBottomRef: Ref<HTMLDivElement>;
   chatHistory: ChatMessage[];
-  highlightKeywords: string[];
-  imageUrl: string;
   isCorrecting: boolean;
   isListening: boolean;
   isLoading: boolean;
   isSendingMessage: boolean;
-  language: Language;
   onGenerateSimilarProblem: () => void;
   onReset: () => void;
   onSelectDifferentProblem: () => void;
   onSendMessage: () => void;
   onToggleListening: () => void;
   personalizedMessage: string | null;
-  selectedProblem: Problem;
   showSimilarProblemButton: boolean;
   texts: LocalizedTextSet;
   userMessage: string;
@@ -32,53 +26,24 @@ type ChatPanelProps = {
 export function ChatPanel({
   chatBottomRef,
   chatHistory,
-  highlightKeywords,
-  imageUrl,
   isCorrecting,
   isListening,
   isLoading,
   isSendingMessage,
-  language,
   onGenerateSimilarProblem,
   onReset,
   onSelectDifferentProblem,
   onSendMessage,
   onToggleListening,
   personalizedMessage,
-  selectedProblem,
   showSimilarProblemButton,
   texts,
   userMessage,
   setUserMessage,
 }: ChatPanelProps) {
-  const isSimilarProblem = selectedProblem.number === (language === 'en' ? 'Similar' : '類題');
-
   return (
     <div className="flex h-full max-h-[90vh] flex-col">
-      <div className="mb-4 flex-grow overflow-y-auto pr-2 space-y-4">
-        <div className="rounded-2xl bg-stone-50 p-4 text-stone-800 shadow-sm">
-          {isSimilarProblem || !imageUrl ? (
-            <p className="text-xl font-bold leading-relaxed">
-              <HighlightedText text={selectedProblem.question} keywords={highlightKeywords} />
-            </p>
-          ) : (
-            <>
-              <Image
-                src={imageUrl}
-                alt="Uploaded worksheet"
-                width={1200}
-                height={900}
-                unoptimized
-                className="mb-4 max-h-[33vh] w-auto max-w-full rounded-lg object-contain"
-              />
-              <p className="text-lg font-semibold leading-relaxed">
-                <span className="mr-2 text-orange-500">{selectedProblem.number || '？'}</span>
-                <HighlightedText text={selectedProblem.question} keywords={highlightKeywords} />
-              </p>
-            </>
-          )}
-        </div>
-
+      <div className="mb-4 flex-grow space-y-4 overflow-y-auto pr-2">
         {chatHistory.map((message, index) => (
           <div key={`${message.role}-${index}`} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div className={`max-w-md lg:max-w-xl ${message.role === 'user' ? 'text-right' : ''}`}>

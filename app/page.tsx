@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 
 import { ChatPanel } from '@/components/app/chat-panel';
+import { HighlightedText } from '@/components/app/highlighted-text';
 import { LoadingSpinner } from '@/components/app/loading-spinner';
 import { ProblemList } from '@/components/app/problem-list';
 import { UploadScreen } from '@/components/app/upload-screen';
@@ -614,8 +615,27 @@ export default function App() {
 
         {appState === 'solving' && !isLoading && (
           <div className="flex h-full w-full flex-col md:flex-row md:gap-2">
-            <div className="flex flex-1 items-center justify-start md:h-auto md:w-3/5">
-              {imageFile && !selectedProblem && imageUrl ? (
+            <div className="flex flex-1 items-center justify-center md:h-auto md:w-3/5">
+              {selectedProblem ? (
+                selectedProblem.number === (language === 'en' ? 'Similar' : '類題') || !imageUrl ? (
+                  <div className="rounded-2xl bg-stone-50 p-6 text-stone-800 shadow-sm">
+                    <p className="text-xl font-bold leading-relaxed">
+                      <HighlightedText text={selectedProblem.question} keywords={highlightKeywords} />
+                    </p>
+                  </div>
+                ) : (
+                  <div className="rounded-2xl bg-stone-50 p-4 shadow-sm">
+                    <Image
+                      src={imageUrl}
+                      alt="Uploaded worksheet"
+                      width={1200}
+                      height={900}
+                      unoptimized
+                      className="h-auto max-h-[33vh] w-auto max-w-full rounded-lg object-contain md:max-h-[80vh]"
+                    />
+                  </div>
+                )
+              ) : imageFile && imageUrl ? (
                 <Image
                   src={imageUrl}
                   alt="Uploaded worksheet"
@@ -636,20 +656,16 @@ export default function App() {
                 <ChatPanel
                   chatBottomRef={chatBottomRef}
                   chatHistory={chatHistory}
-                  highlightKeywords={highlightKeywords}
-                  imageUrl={imageUrl}
                   isCorrecting={isCorrecting}
                   isListening={isListening}
                   isLoading={isLoading}
                   isSendingMessage={isSendingMessage}
-                  language={language}
                   onGenerateSimilarProblem={generateSimilarProblem}
                   onReset={resetState}
                   onSelectDifferentProblem={selectDifferentProblem}
                   onSendMessage={() => void handleSendMessage()}
                   onToggleListening={() => void handleToggleListening()}
                   personalizedMessage={personalizedMessage}
-                  selectedProblem={selectedProblem}
                   showSimilarProblemButton={showSimilarProblemButton}
                   texts={uiText}
                   userMessage={userMessage}
