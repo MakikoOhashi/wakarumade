@@ -1,5 +1,11 @@
 # WAKARUMADE
 
+AI-powered math word problem tutor for elementary students.
+
+OCR -> AI explanation -> Similar problems
+
+Demo video: [https://youtu.be/4-p-3T3RSig](https://youtu.be/4-p-3T3RSig)
+
 WAKARUMADE is a bilingual web app that helps Grades 1-3 learners work through math word problems step by step. A child can upload a worksheet photo, let the app extract each problem with OCR, chat with an AI teacher for guided support, and generate a similar follow-up problem for extra practice.
 
 This repository is a strong code sample because it shows product thinking as well as implementation detail: OCR ingestion, structured AI responses, session persistence, and a conversational interface built for a real learner workflow.
@@ -29,6 +35,26 @@ The current app supports:
 - Tailwind CSS 3.3
 
 ## Architecture Notes
+
+```mermaid
+flowchart TD
+    A["User uploads worksheet photo"] --> B["Next.js app (app/page.tsx)"]
+    B --> C["OCR API (app/api/ocr)"]
+    C --> D["Gemini OCR + structured JSON output"]
+    D --> E["Problem list / selected problem"]
+    E --> F["Chat API (app/api/chat)"]
+    F --> G["Gemini teacher response + summary generation"]
+    G --> H["Supabase guest_chat_logs"]
+    H --> B
+    E --> I["Similar Problem API (app/api/similar)"]
+    I --> J["Gemini similar problem generation"]
+    J --> B
+    B --> K["Speech correction API (app/api/correct)"]
+    K --> B
+```
+
+- High-level flow: photo upload -> OCR extraction -> problem selection -> tutoring chat -> Supabase persistence -> similar problem generation
+- The browser handles learner interaction and session restore, while server routes call Gemini and persist logs in Supabase.
 
 - `app/page.tsx` coordinates the main learner flow and delegates UI sections to smaller components.
 - `app/api/ocr/route.ts` sends worksheet images to Gemini and requests structured JSON output.
