@@ -159,3 +159,7 @@ Possible next improvements:
 - Stronger analytics around repeated misconception types
 - Better learner profiles beyond guest sessions
 - More deliberate test coverage around API routes and flow state
+
+## License
+
+MIT. See [LICENSE](LICENSE).
