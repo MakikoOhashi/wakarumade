@@ -4,9 +4,10 @@ import type { Problem } from '@/types/app';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseDisabled = process.env.NEXT_PUBLIC_DISABLE_SUPABASE === 'true';
 
 export const browserSupabase =
-  supabaseUrl && supabaseAnonKey
+  !supabaseDisabled && supabaseUrl && supabaseAnonKey
     ? createClient(supabaseUrl, supabaseAnonKey)
     : null;
 

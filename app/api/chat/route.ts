@@ -10,32 +10,39 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "missing guest id" }, { status: 400 });
     }
 
-    const supabase = createClient(
-      process.env.SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      {
-        auth: { persistSession: false}
-      }
-    );
+    const supabaseEnabled =
+      process.env.DISABLE_SUPABASE !== 'true' &&
+      !!process.env.SUPABASE_URL &&
+      !!process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    const supabase = supabaseEnabled
+      ? createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
+          auth: { persistSession: false },
+        })
+      : null;
 
     const { message, problem, problemId, chatHistory, language } = await request.json();
     const effectiveProblemId = problemId ?? problem ?? 'unknown-problem';
 
     // Load existing chat history from database
     let existingHistory = [];
-    const { data: existingLog } = await supabase
-      .from('guest_chat_logs')
-      .select('log, summary, problem_id')
-      .eq('guest_id', guestId)
-      .eq('problem_id', effectiveProblemId)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    const existingLog = supabase
+      ? (
+          await supabase
+            .from('guest_chat_logs')
+            .select('log, summary, problem_id')
+            .eq('guest_id', guestId)
+            .eq('problem_id', effectiveProblemId)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle()
+        ).data
+      : null;
 
     let historySource: any | null = existingLog ?? null;
 
     // Fallback for legacy rows without problem_id (or mismatched IDs)
-    if (!historySource && problem) {
+    if (!historySource && supabase && problem) {
       const snippet = problem.substring(0, Math.min(50, problem.length));
       if (snippet) {
         const { data: legacyLogs } = await supabase
@@ -167,19 +174,24 @@ export async function POST(request: NextRequest) {
     }
 
     // Save to database
-    const { error } = await supabase
-      .from('guest_chat_logs')
-      .upsert({
-        guest_id: guestId,
-        problem_id: effectiveProblemId,
-        log: updatedHistory,
-        summary: summaryText
-      }, {
-        onConflict: 'guest_id,problem_id'
-      });
+    if (supabase) {
+      const { error } = await supabase
+        .from('guest_chat_logs')
+        .upsert(
+          {
+            guest_id: guestId,
+            problem_id: effectiveProblemId,
+            log: updatedHistory,
+            summary: summaryText,
+          },
+          {
+            onConflict: 'guest_id,problem_id',
+          },
+        );
 
-    if (error) {
-      console.error('Supabase error:', error);
+      if (error) {
+        console.error('Supabase error:', error);
+      }
     }
 
     return NextResponse.json({ ...result, chatHistory: updatedHistory, guestId });

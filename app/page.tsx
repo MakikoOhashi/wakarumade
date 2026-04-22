@@ -217,7 +217,8 @@ export default function App() {
       if (imageUrl) {
         URL.revokeObjectURL(imageUrl);
       }
-      setImageUrl(URL.createObjectURL(processedFile));
+      const objectUrl = URL.createObjectURL(processedFile);
+      setImageUrl(objectUrl);
 
       try {
         const imagePart = await fileToGenerativePart(processedFile);
@@ -235,7 +236,25 @@ export default function App() {
         }
 
         const result = await response.json();
-        setOcrResults(result.problems || []);
+        const rawProblems = Array.isArray(result?.problems) ? result.problems : [];
+        const problems = rawProblems
+          .filter((entry: unknown) => !!entry && typeof entry === 'object')
+          .map((entry: any) => ({
+            number: typeof entry.number === 'string' ? entry.number : entry.number ?? null,
+            question: typeof entry.question === 'string' ? entry.question.trim() : '',
+          }))
+          .filter((entry: { question: string }) => entry.question.length > 0);
+
+        if (problems.length === 0) {
+          setError(uiText.errorOcr);
+          setAppState('upload');
+          setImageFile(null);
+          URL.revokeObjectURL(objectUrl);
+          setImageUrl('');
+          return;
+        }
+
+        setOcrResults(problems);
         setAppState('solving');
       } catch (ocrError) {
         console.error('OCR Error:', ocrError);
@@ -297,20 +316,23 @@ export default function App() {
           setGuestId(result.guestId);
         }
 
-        if (isSolvedMessage(result.teacher) && selectedProblem && guestId && browserSupabase) {
-          const problemId = getProblemId(selectedProblem);
-          const { data: logData, error: summaryError } = await browserSupabase
-            .from('guest_chat_logs')
-            .select('summary')
-            .eq('guest_id', guestId)
-            .eq('problem_id', problemId)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
+        if (isSolvedMessage(result.teacher) && selectedProblem && guestId) {
+          if (browserSupabase) {
+            const problemId = getProblemId(selectedProblem);
+            const { data: logData, error: summaryError } = await browserSupabase
+              .from('guest_chat_logs')
+              .select('summary')
+              .eq('guest_id', guestId)
+              .eq('problem_id', problemId)
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .maybeSingle();
 
-          if (!summaryError && logData?.summary) {
-            setPersonalizedMessage(uiText.personalizedMessage);
+            if (!summaryError && logData?.summary) {
+              setPersonalizedMessage(uiText.personalizedMessage);
+            }
           }
+
           setShowSimilarProblemButton(true);
         }
       } catch (chatError) {
@@ -344,7 +366,7 @@ export default function App() {
 
   const startChat = useCallback(
     async (problem: Problem) => {
-      if (!guestId || !browserSupabase) {
+      if (!guestId) {
         return;
       }
 
@@ -355,27 +377,29 @@ export default function App() {
       setPersonalizedMessage(null);
 
       try {
-        const { data: existingLog, error: fetchError } = await browserSupabase
-          .from('guest_chat_logs')
-          .select('log')
-          .eq('guest_id', guestId)
-          .eq('problem_id', getProblemId(problem))
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
+        if (browserSupabase) {
+          const { data: existingLog, error: fetchError } = await browserSupabase
+            .from('guest_chat_logs')
+            .select('log')
+            .eq('guest_id', guestId)
+            .eq('problem_id', getProblemId(problem))
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
 
-        if (fetchError) {
-          console.error('Failed to fetch existing chat history:', fetchError);
-        }
+          if (fetchError) {
+            console.error('Failed to fetch existing chat history:', fetchError);
+          }
 
-        if (existingLog?.log?.length) {
-          const restoredHistory = existingLog.log.map((entry: { role: string; content: string }) => ({
-            role: entry.role === 'user' ? 'user' : 'model',
-            text: entry.content,
-            isLoading: false,
-          }));
-          setChatHistory(restoredHistory);
-          return;
+          if (existingLog?.log?.length) {
+            const restoredHistory = existingLog.log.map((entry: { role: string; content: string }) => ({
+              role: entry.role === 'user' ? 'user' : 'model',
+              text: entry.content,
+              isLoading: false,
+            }));
+            setChatHistory(restoredHistory);
+            return;
+          }
         }
 
         setChatHistory([{ role: 'model', text: uiText.thinking, isLoading: true }]);
@@ -420,7 +444,7 @@ export default function App() {
   );
 
   const generateSimilarProblem = useCallback(async () => {
-    if (!selectedProblem || !guestId || !browserSupabase) {
+    if (!selectedProblem || !guestId) {
       return;
     }
 
@@ -431,18 +455,22 @@ export default function App() {
     setHighlightKeywords([]);
 
     try {
-      const problemId = getProblemId(selectedProblem);
-      const { data: logData, error: fetchError } = await browserSupabase
-        .from('guest_chat_logs')
-        .select('summary')
-        .eq('guest_id', guestId)
-        .eq('problem_id', problemId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      let summary: string | undefined;
+      if (browserSupabase) {
+        const problemId = getProblemId(selectedProblem);
+        const { data: logData, error: fetchError } = await browserSupabase
+          .from('guest_chat_logs')
+          .select('summary')
+          .eq('guest_id', guestId)
+          .eq('problem_id', problemId)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
 
-      if (fetchError) {
-        console.error('Failed to fetch summary:', fetchError);
+        if (fetchError) {
+          console.error('Failed to fetch summary:', fetchError);
+        }
+        summary = logData?.summary;
       }
 
       const response = await fetch('/api/similar', {
@@ -450,7 +478,7 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           question: selectedProblem.question,
-          summary: logData?.summary,
+          summary,
           language,
         }),
       });

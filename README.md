@@ -88,6 +88,10 @@ NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_URL=your_supabase_project_url
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+
+# Optional: disable Supabase read/write (no persistence or restore)
+# DISABLE_SUPABASE=true
+# NEXT_PUBLIC_DISABLE_SUPABASE=true
 ```
 
 The browser uses the `NEXT_PUBLIC_*` values for restoring guest sessions, and the server routes use `SUPABASE_URL` plus `SUPABASE_SERVICE_ROLE_KEY` to read and write tutoring logs safely.
