@@ -1,3 +1,13 @@
+# Archived
+
+This repository contains an experimental web version of Wakarumade.
+
+Development has been paused while focusing on the iOS version and product validation.
+
+The repository is kept for historical reference and may be revisited in the future.
+
+---
+
 # WAKARUMADE
 
 AI-powered math word problem tutor for elementary students.
